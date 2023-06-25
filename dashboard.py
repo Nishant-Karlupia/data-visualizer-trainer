@@ -1,10 +1,10 @@
 import sys
 from PyQt5 import uic
-from PyQt5.QtWidgets import QMainWindow,QApplication,QHBoxLayout,QFrame
-from PyQt5.QtCore import QPropertyAnimation
+from PyQt5.QtWidgets import QMainWindow,QApplication,QHBoxLayout,QFrame,QDesktopWidget
+from PyQt5.QtCore import QPropertyAnimation,QEasingCurve
 from PyQt5.QtSvg import QSvgWidget
 from PyQt5.QtGui import QPixmap,QIcon
-from PyQt5.QtCore import QSize,Qt,QPoint
+from PyQt5.QtCore import QSize,Qt,QPoint,QRect
 
 from graph_between_variables import MainWindow as Graph
 from show_data_model import MainWindow as DataModel
@@ -13,6 +13,14 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi("dashboard.ui",self)
+
+        self.isScreenMaximized=False
+        self.window_width,self.window_height=self.width(),self.height()
+        self.x_pos,self.y_pos=300,80
+
+        self.desktop=QDesktopWidget()
+        # print(self.desktop.screenGeometry())
+        # self.setGeometry(self.x_pos,self.y_pos,self.window_width,self.window_height)
 
         self.previous_pos=self.pos()
 
@@ -27,8 +35,8 @@ class MainWindow(QMainWindow):
 
         self.toggle_sidebar.clicked.connect(self.toggle_window)
         self.visualize_data_btn.clicked.connect(self.visualize_data_function)
-        self.minimize_btn.clicked.connect(self.showMinimized)
-        self.maximize_btn.clicked.connect(self.showMaximized)
+        self.minimize_btn.clicked.connect(self.show_minimized)
+        self.maximize_btn.clicked.connect(self.show_maximized)
         self.close_btn.clicked.connect(self.close)
         self.view_data_btn.clicked.connect(self.show_data_model_function)
 
@@ -98,6 +106,45 @@ class MainWindow(QMainWindow):
         self.animation.start()
 
 
+    def show_minimized(self):
+        self.animate_minimization=QPropertyAnimation(self,b'windowOpacity')
+        self.animate_minimization.setDuration(300)
+        self.animate_minimization.setStartValue(1)
+        self.animate_minimization.setEndValue(0)
+        self.animate_minimization.setEasingCurve(QEasingCurve.OutQuart)
+        self.animate_minimization.start()
+        self.animate_minimization.finished.connect(self.after_minimization)
+
+    def after_minimization(self):
+        self.setWindowOpacity(1)
+        self.setVisible(False)
+        self.showMinimized()
+        self.setVisible(True)
+
+    def show_maximized(self):
+
+        icon=None
+        if self.isScreenMaximized:
+            self.isScreenMaximized=False
+            icon=QPixmap("icons/arrow-up-right.svg")
+
+            self.animate_normal=QPropertyAnimation(self,b'geometry')
+            self.animate_normal.setDuration(500)
+            self.animate_normal.setStartValue(self.geometry())
+            self.animate_normal.setEndValue(QRect(self.x_pos,self.y_pos,self.window_width,self.window_height))
+            self.animate_normal.start()
+        else:
+            self.isScreenMaximized=True
+            icon=QPixmap("icons/arrow-down-left.svg")
+            self.animate_maximization=QPropertyAnimation(self,b'geometry')
+            self.animate_maximization.setDuration(500)
+            self.animate_maximization.setStartValue(self.geometry())
+            self.animate_maximization.setEndValue(self.desktop.screenGeometry())
+            self.animate_maximization.start()
+
+        icon=QIcon(icon)
+
+        self.maximize_btn.setIcon(icon)
         
 
 
