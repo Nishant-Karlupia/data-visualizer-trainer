@@ -3,13 +3,19 @@ from PyQt5 import uic
 from PyQt5.QtWidgets import QMainWindow,QApplication,QHBoxLayout,QFrame,QDesktopWidget
 from PyQt5.QtCore import QPropertyAnimation,QEasingCurve
 from PyQt5.QtSvg import QSvgWidget
-from PyQt5.QtGui import QPixmap,QIcon
-from PyQt5.QtCore import QSize,Qt,QPoint,QRect
+from PyQt5.QtGui import QPixmap,QIcon,QDesktopServices
+from PyQt5.QtCore import QSize,Qt,QPoint,QRect,QUrl
 
 from graph_between_variables import MainWindow as Graph
 from show_data_model import MainWindow as DataModel
 
+GITHUB="https://github.com/Nishant-Karlupia"
+LINKEDIN="https://www.linkedin.com/in/nishant-karlupia-7a474b279/"
+
 class MainWindow(QMainWindow):
+
+    global GITHUB,LINKEDIN
+
     def __init__(self):
         super().__init__()
         uic.loadUi("dashboard.ui",self)
@@ -39,6 +45,8 @@ class MainWindow(QMainWindow):
         self.maximize_btn.clicked.connect(self.show_maximized)
         self.close_btn.clicked.connect(self.close)
         self.view_data_btn.clicked.connect(self.show_data_model_function)
+        self.github_link_btn.clicked.connect(lambda: self.open_url(GITHUB))
+        self.linkedin_link_btn.clicked.connect(lambda: self.open_url(LINKEDIN))
 
         self.mainLayout.setContentsMargins(0,0,0,0)
         self.mainLayout.setSpacing(0)
@@ -95,7 +103,7 @@ class MainWindow(QMainWindow):
     def toggle_window(self):
         width,newWidth=self.sidebar.width(),0
 
-        newWidth=[200,0][width>=150]
+        newWidth=[230,0][width>=150]
 
         # print(width,newWidth)
 
@@ -129,7 +137,7 @@ class MainWindow(QMainWindow):
             icon=QPixmap("icons/arrow-up-right.svg")
 
             self.animate_normal=QPropertyAnimation(self,b'geometry')
-            self.animate_normal.setDuration(500)
+            self.animate_normal.setDuration(300)
             self.animate_normal.setStartValue(self.geometry())
             self.animate_normal.setEndValue(QRect(self.x_pos,self.y_pos,self.window_width,self.window_height))
             self.animate_normal.start()
@@ -137,7 +145,7 @@ class MainWindow(QMainWindow):
             self.isScreenMaximized=True
             icon=QPixmap("icons/arrow-down-left.svg")
             self.animate_maximization=QPropertyAnimation(self,b'geometry')
-            self.animate_maximization.setDuration(500)
+            self.animate_maximization.setDuration(300)
             self.animate_maximization.setStartValue(self.geometry())
             self.animate_maximization.setEndValue(self.desktop.screenGeometry())
             self.animate_maximization.start()
@@ -145,6 +153,10 @@ class MainWindow(QMainWindow):
         icon=QIcon(icon)
 
         self.maximize_btn.setIcon(icon)
+
+    def open_url(self,link):
+        link=QUrl(link)
+        QDesktopServices.openUrl(link)
         
 
 
@@ -154,6 +166,7 @@ class MainWindow(QMainWindow):
         toggle = QIcon(toggle)
         self.toggle_sidebar.setIcon(toggle)
         # self.toggle_sidebar.setIconSize(self.toggle_sidebar.size())
+        self.toggle_sidebar.setCursor(Qt.PointingHandCursor)
 
         minimize=QPixmap("icons/minus.svg")
         minimize=QIcon(minimize)
@@ -166,6 +179,20 @@ class MainWindow(QMainWindow):
         close=QPixmap("icons/x.svg")
         close=QIcon(close)
         self.close_btn.setIcon(close)
+
+        github=QPixmap("icons/github.svg")
+        github=QIcon(github)
+        self.github_link_btn.setIcon(github)
+        self.github_link_btn.setCursor(Qt.PointingHandCursor)
+
+        linkedin=QPixmap("icons/linkedin.svg")
+        linkedin=QIcon(linkedin)
+        self.linkedin_link_btn.setIcon(linkedin)
+        self.linkedin_link_btn.setCursor(Qt.PointingHandCursor)
+
+        self.visualize_data_btn.setCursor(Qt.PointingHandCursor)
+        self.view_data_btn.setCursor(Qt.PointingHandCursor)
+        self.another_btn.setCursor(Qt.PointingHandCursor)
 
 
     def mousePressEvent(self,event):

@@ -2,10 +2,17 @@ QWidget#operational
 {
     /* background-color: magenta; */
     background-color: rgb(10, 15, 15);
+    border-bottom: 1px solid red;
+    /* border-top: 2px solid red; */
 }
 QFrame#sidebar
 {
-    background-color: yellow;
+    background-color: rgb(5, 15, 22);
+    border-right: 1px solid red;
+    /* border-left: 2px solid red; */
+    padding-right: 7px;
+    padding-left: 7px;
+    max-width: 230px;
 }
 QFrame#body_frame
 {
@@ -42,4 +49,24 @@ QPushButton#close_btn,QPushButton#minimize_btn,QPushButton#maximize_btn
     background: transparent;
     icon-size: 25px;
     /* margin-left: -20px; */
+}
+QPushButton#github_link_btn,QPushButton#linkedin_link_btn
+{
+    icon-size: 27px;
+    background-color: black;
+    border: 2px solid red;
+    border: 2px solid rgb(37, 35, 68);
+    border-radius: 5px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+}
+
+QPushButton#view_data_btn,QPushButton#visualize_data_btn,QPushButton#another_btn
+{
+    background-color: black;
+    border: 2px solid rgb(37, 35, 68);
+    border-radius: 5px;
+    padding: 10px 5px;
+    margin-top: 15px;
+    color: white;
 }
