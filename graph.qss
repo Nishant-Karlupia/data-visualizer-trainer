@@ -1,0 +1,112 @@
+/* ********************************************** */
+QPushButton#open_btn {
+  background-color: #361a50;
+  color: white;
+  /* border: none; */
+  padding: 5px 15px;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 16px;
+  min-width: 120px;
+  font-size: 22px;
+  font-family: consolas;
+}
+
+QPushButton#open_btn:hover {
+  background-color: #2c226c;
+}
+
+QPushButton#open_btn:pressed {
+  background-color: #241a56;
+}
+/* ********************************************** */
+
+/* ********************************************** */
+QPushButton#reset_btn {
+  background-color: #453997;
+  color: white;
+  padding: 5px 15px;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 16px;
+  min-width: 120px;
+  font-size: 22px;
+  font-family: consolas;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+QPushButton#reset_btn:hover {
+  background-color: #5648b3;
+}
+
+QPushButton#reset_btn:pressed {
+  background-color: #241a56;
+}
+/* ********************************************** */
+
+QLineEdit#separator {
+  font-size: 22px;
+  font-family: consolas;
+  padding: 5px 15px;
+  /* margin-left: 100px; */
+}
+
+QDockWidget {
+  background-color: #3a0769;
+  color: white;
+  font-size: 20px;
+}
+
+QWidget#tools_container {
+  background-color: #3a0769;
+}
+
+
+QLabel {
+  font-size: 18px;
+  color: white;
+  margin-bottom: 7px;
+  margin-top: 10px;
+}
+QComboBox {
+  margin-bottom: 7px;
+  margin-top: 10px;
+  font-size: 17px;
+  padding: 2px 0px;
+}
+QComboBox:hover {
+  background-color: rgb(249, 243, 243);
+  border: none;
+  outline: none;
+}
+
+QCheckBox {
+  margin-bottom: 7px;
+  margin-top: 10px;
+}
+
+QWidget#container {
+    background-color: #e7e4c4;
+}
+
+QMenuBar
+{
+    background-color: #e7e4c4;
+    font-size: 20px;
+    font-family: consolas;
+    /* height: 50px; */
+}
+QMenuBar::item {
+    background-color: transparent; 
+    padding: 5px 10px;             
+    color: black;
+}
+QMenuBar::item:selected {
+    background-color: #c8c59f;                 
+}
+QMenu::item {
+    background-color: transparent; /* Set the background color of menu items */
+    padding: 5px 20px;             /* Set padding for menu items */
+    font-size: 20px;
+}

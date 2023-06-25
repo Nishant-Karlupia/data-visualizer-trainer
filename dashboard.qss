@@ -1,0 +1,45 @@
+QWidget#operational
+{
+    /* background-color: magenta; */
+    background-color: rgb(10, 15, 15);
+}
+QFrame#sidebar
+{
+    background-color: yellow;
+}
+QFrame#body_frame
+{
+    background-color: #c8c59f;
+    background-color:rgb(10, 15, 15);
+    padding: 10px 10px;
+}
+
+QLabel#label_data_visualization
+{
+    color: red;
+}
+
+
+QPushButton#toggle_sidebar
+{
+    /* background-color: black; */
+    min-width: 80px;
+    max-width: 80px;
+    min-height: 45px;
+    max-height: 45px;
+    background: transparent;
+    padding: 0px;
+    icon-size: 80px;
+    margin-left: -20px;
+    /* align-items: left; */
+}
+QPushButton#close_btn,QPushButton#minimize_btn,QPushButton#maximize_btn
+{
+    min-width: 40px;
+    max-width: 40px;
+    min-height: 45px;
+    max-height: 45px;
+    background: transparent;
+    icon-size: 25px;
+    /* margin-left: -20px; */
+}
