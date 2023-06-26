@@ -70,3 +70,12 @@ QPushButton#view_data_btn,QPushButton#visualize_data_btn,QPushButton#another_btn
     margin-top: 15px;
     color: white;
 }
+
+QPushButton#visualized_btn
+{
+    background: transparent;
+    opacity: 0.1;
+    icon-size: 800px;
+}
+
+

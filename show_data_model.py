@@ -1,6 +1,6 @@
 import sys
 import pandas as pd
-from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QPushButton,QVBoxLayout,QTableView,QFileDialog,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect
+from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QPushButton,QVBoxLayout,QTableView,QFileDialog,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect,QMessageBox
 from PyQt5.QtGui import QStandardItem,QStandardItemModel,QColor
 from PyQt5.QtCore import Qt
 
@@ -56,8 +56,12 @@ class MainWindow(QMainWindow):
         stylesheet=None
         with open('data_model.qss', 'r') as f:
             stylesheet = f.read()
-        self.setStyleSheet(stylesheet)
         f.close()
+
+        try:
+            self.setStyleSheet(stylesheet)
+        except:
+            pass
 
 
     def open_file(self):
@@ -81,7 +85,8 @@ class MainWindow(QMainWindow):
                 get=True
             
             if not get:
-                print("Not able to open data file")
+                # print("Not able to open data file")
+                QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
                 return
             
             columns=list(df.columns)

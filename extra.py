@@ -1,22 +1,33 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
-from PyQt5.QtCore import QUrl
-from PyQt5.QtGui import QDesktopServices
+import sys
+from PyQt5.QtWidgets import QApplication, QMessageBox,QMainWindow,QPushButton
+from PyQt5 import QtCore
 
-class MyMainWindow(QMainWindow):
+class FramelessMessageBox(QMessageBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
+
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Open Link Example")
 
-        self.open_link_btn = QPushButton("Open Link", self)
-        self.open_link_btn.clicked.connect(self.open_link)
+        btn=QPushButton("Click",self)
+        btn.clicked.connect(self.show_another)
 
-    def open_link(self):
-        url = QUrl("https://www.google.com")  # Replace with your desired link
-        QDesktopServices.openUrl(url)
+    def show_another(self):
 
-if __name__ == '__main__':
+        self.message_box = FramelessMessageBox()
+        self.message_box.setText("This is a frameless message box.")
+        self.message_box.show()
+
+
+if __name__=="__main__":
     app = QApplication([])
-    main_window = MyMainWindow()
-    main_window.show()
-    app.exec_()
+    window=MainWindow()
+    window.show()
+    sys.exit(app.exec_())
+    

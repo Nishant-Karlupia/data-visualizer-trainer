@@ -1,7 +1,7 @@
 import sys
 import pandas as pd
 import numpy as np
-from PyQt5.QtWidgets import QWidget, QMainWindow,QApplication,QComboBox,QGraphicsView,QVBoxLayout,QHBoxLayout,QPushButton,QFileDialog,QLineEdit,QTextEdit,QDockWidget,QCheckBox,QTableView,QHeaderView,QFormLayout,QLabel,QGraphicsDropShadowEffect
+from PyQt5.QtWidgets import QWidget, QMainWindow,QApplication,QComboBox,QGraphicsView,QVBoxLayout,QHBoxLayout,QPushButton,QFileDialog,QLineEdit,QTextEdit,QDockWidget,QCheckBox,QTableView,QHeaderView,QFormLayout,QLabel,QGraphicsDropShadowEffect,QMessageBox
 from PyQt5.QtChart import QChart,QChartView,QValueAxis,QLineSeries,QScatterSeries
 from PyQt5.QtGui import QPainter,QColor,QFont
 from PyQt5.QtCore import Qt
@@ -141,8 +141,11 @@ class MainWindow(QMainWindow):
         stylesheet=None
         with open('graph.qss', 'r') as f:
             stylesheet = f.read()
-        self.setStyleSheet(stylesheet)
         f.close()
+        try:
+            self.setStyleSheet(stylesheet)
+        except:
+            pass
 
     
     def open_file_function(self):
@@ -166,7 +169,9 @@ class MainWindow(QMainWindow):
                 get=True
             
             if not get:
-                print("Not able to open data file")
+                # print("Not able to open data file")
+                msg_box=QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
+                msg_box.setWindowFlags()
                 return
             
             self.combo_first.blockSignals(True)
@@ -191,7 +196,7 @@ class MainWindow(QMainWindow):
 
         self.x_min,self.x_max,self.y_min,self.y_max=10**18,-10**18,10**18,-10**18
 
-        print(x_dim,y_dim)
+        # print(x_dim,y_dim)
 
         line_series=QLineSeries()
         line_series=QScatterSeries()
@@ -334,12 +339,18 @@ class MainWindow(QMainWindow):
 
         dock_form=QFormLayout()
         dock_form.setAlignment(Qt.AlignTop)
-        # label=QLabel("Themes")
-        dock_form.addRow(QLabel("Themes: "),themes_cb)
+        theme_label=QLabel("Themes")
+        theme_label.setObjectName("theme_label")
+        dock_form.addRow(theme_label,themes_cb)
         # label.setText("Animations: ")
-        dock_form.addRow(QLabel("Animations: "),self.animations_cb)
+        animation_label=QLabel("Animations: ")
+        animation_label.setObjectName("animation_label")
+        dock_form.addRow(animation_label,self.animations_cb)
         # dock_form.addRow(QLabel("Legend: "),self.legend_cb)
-        dock_form.addRow(QLabel("Anti-Aliasing: "),self.antialiasing_cb)
+
+        aliasing_label=QLabel("Anti-Aliasing: ")
+        aliasing_label.setObjectName("aliasing_label")
+        dock_form.addRow(aliasing_label,self.antialiasing_cb)
         dock_form.addRow(reset_button)
         dock_form.addRow(self.combo_first)
         dock_form.addRow(self.combo_second)

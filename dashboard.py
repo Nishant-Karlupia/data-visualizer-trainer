@@ -1,6 +1,6 @@
 import sys
 from PyQt5 import uic
-from PyQt5.QtWidgets import QMainWindow,QApplication,QHBoxLayout,QFrame,QDesktopWidget
+from PyQt5.QtWidgets import QMainWindow,QApplication,QHBoxLayout,QFrame,QDesktopWidget,QPushButton,QSizePolicy
 from PyQt5.QtCore import QPropertyAnimation,QEasingCurve
 from PyQt5.QtSvg import QSvgWidget
 from PyQt5.QtGui import QPixmap,QIcon,QDesktopServices
@@ -68,7 +68,10 @@ class MainWindow(QMainWindow):
             stylesheet=f.read()
         f.close()
 
-        self.setStyleSheet(stylesheet)
+        try:
+            self.setStyleSheet(stylesheet)
+        except:
+            pass
 
     def visualize_data_function(self):
         self.toggle_window()
@@ -193,6 +196,15 @@ class MainWindow(QMainWindow):
         self.visualize_data_btn.setCursor(Qt.PointingHandCursor)
         self.view_data_btn.setCursor(Qt.PointingHandCursor)
         self.another_btn.setCursor(Qt.PointingHandCursor)
+
+        # visualized_icon=QPixmap("icons/data_visualization_icon.png")
+        # visualized_btn=QPushButton(QIcon(visualized_icon),"")
+        # visualized_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        # visualized_btn.setObjectName("visualized_btn")
+        # # visualized_btn.setIconSize(QSize(1200,1200))
+        # self.layout_on_body_frame.addWidget(visualized_btn)
+
+        # print(self.body_frame.geometry())
 
 
     def mousePressEvent(self,event):
