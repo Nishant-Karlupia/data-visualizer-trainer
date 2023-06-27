@@ -197,12 +197,13 @@ class MainWindow(QMainWindow):
         self.view_data_btn.setCursor(Qt.PointingHandCursor)
         self.another_btn.setCursor(Qt.PointingHandCursor)
 
-        # visualized_icon=QPixmap("icons/data_visualization_icon.png")
-        # visualized_btn=QPushButton(QIcon(visualized_icon),"")
-        # visualized_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        # visualized_btn.setObjectName("visualized_btn")
-        # # visualized_btn.setIconSize(QSize(1200,1200))
-        # self.layout_on_body_frame.addWidget(visualized_btn)
+        # visualized_icon=QPixmap("icons/data_visualization_icon.jpg")
+        visualized_icon=QPixmap("icons/data_visualization_icon_1.png")
+        visualized_btn=QPushButton(QIcon(visualized_icon),"")
+        visualized_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        visualized_btn.setObjectName("visualized_btn")
+        # visualized_btn.setIconSize(QSize(1000,1000))
+        self.layout_on_body_frame.addWidget(visualized_btn)
 
         # print(self.body_frame.geometry())
 

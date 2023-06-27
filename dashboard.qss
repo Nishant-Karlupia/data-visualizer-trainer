@@ -12,7 +12,7 @@ QFrame#sidebar
     /* border-left: 2px solid red; */
     padding-right: 7px;
     padding-left: 7px;
-    max-width: 230px;
+    /* max-width: 230px; */
 }
 QFrame#body_frame
 {
