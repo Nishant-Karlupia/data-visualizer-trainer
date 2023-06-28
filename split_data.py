@@ -4,46 +4,8 @@ import pandas as pd
 from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QPushButton,QVBoxLayout,QTableView,QFileDialog,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect,QMessageBox,QListWidget,QListWidgetItem,QLabel,QGridLayout
 from PyQt5.QtGui import QColor,QDrag
 from PyQt5.QtCore import Qt,QMimeData
-
-class CustomListWidget(QListWidget):
-    def __init__(self):
-        super().__init__()
-        self.setAcceptDrops(True)
-        self.setDragEnabled(True)
-
-
-    def startDrag(self, supportedActions):
-        items=self.selectedItems()
-        if len(items)<=0:
-            return
-
-        data=QMimeData()
-        data.setText(items[0].text())
-        drag=QDrag(self)
-        drag.setMimeData(data)
-        drag.exec(Qt.MoveAction)
-
-    
-    def dragEnterEvent(self,event):
-        if event.mimeData().hasText():
-            event.acceptProposedAction()
-
-    def dragMoveEvent(self, event):
-        if event.mimeData().hasText():
-            event.acceptProposedAction()
-
-    def dropEvent(self, event):
-        if event.mimeData().hasText():
-            text=event.mimeData().text()
-            item=QListWidgetItem(str(text))
-            self.addItem(item)
-            event.acceptProposedAction()
-            event.setDropAction(Qt.MoveAction)
-
-            source=event.source()
-            source.takeItem(source.row(source.currentItem()))
-
-
+from CustomWidgets import CustomListWidget,FirstButton
+from CustomFunction import apply_stylesheet,Open_Datafile
 
 class SplitWindow(QMainWindow):
     def __init__(self,columns,x_col,y_col):
@@ -63,27 +25,11 @@ class SplitWindow(QMainWindow):
         target_label=QLabel("Target Variables")
         target_label.setObjectName("target")
 
-        shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(8)
-        shadow.setColor(QColor(0, 0, 0, 100))
-        shadow.setOffset(0, 2)
-
-        self.confirm_btn=QPushButton("OK")
-        self.confirm_btn.clicked.connect(lambda: self.work_done(x_col,y_col))
-        self.confirm_btn.setObjectName("confirm_btn")
-        self.confirm_btn.setCursor(Qt.PointingHandCursor)
-        self.confirm_btn.setGraphicsEffect(shadow)
-
-        shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(8)
-        shadow.setColor(QColor(0, 0, 0, 100))
-        shadow.setOffset(0, 2)
         
-        self.close_btn=QPushButton("Close")
-        self.close_btn.clicked.connect(self.close)
-        self.close_btn.setObjectName("close_btn")
-        self.close_btn.setCursor(Qt.PointingHandCursor)
-        self.close_btn.setGraphicsEffect(shadow)
+
+        self.confirm_btn=FirstButton("OK","confirm_btn",lambda: self.work_done(x_col,y_col))
+        self.close_btn=FirstButton("Close","close_btn",self.close)
+        
 
         widget=QWidget()
         layout=QVBoxLayout()
@@ -104,20 +50,7 @@ class SplitWindow(QMainWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-        self.apply_stylesheet()
-
-
-    def apply_stylesheet(self):
-        stylesheet=None
-        with open('split_data.qss', 'r') as f:
-            stylesheet = f.read()
-        f.close()
-
-        try:
-            self.setStyleSheet(stylesheet)
-        except:
-            pass
-
+        apply_stylesheet(self,'split_data.qss')
 
     def work_done(self,x_col,y_col):
         x_col.clear()
@@ -135,9 +68,6 @@ class SplitWindow(QMainWindow):
         self.confirm_btn.setEnabled(True)
 
        
-
-
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -148,16 +78,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(500,500)
 
         widget=QWidget()
-        self.open_btn=QPushButton("Open File")
-        self.open_btn.clicked.connect(self.open_file)
-        self.open_btn.setObjectName("open_btn")
-
-        shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(8)
-        shadow.setColor(QColor(0, 0, 0, 100))
-        shadow.setOffset(0, 2)
-        self.open_btn.setCursor(Qt.PointingHandCursor)
-        self.open_btn.setGraphicsEffect(shadow)
+        self.open_btn=FirstButton("Open File","open_btn",self.open_file)
         
         
         self.sep=QLineEdit()
@@ -175,53 +96,29 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(widget)
 
-        self.apply_stylesheet()
-
-
-    def apply_stylesheet(self):
-        stylesheet=None
-        with open('split_data.qss', 'r') as f:
-            stylesheet = f.read()
-        f.close()
-
-        try:
-            self.setStyleSheet(stylesheet)
-        except:
-            pass
+        apply_stylesheet(self,'split_data.qss')
 
 
     def open_file(self):
         if(len(self.x_col)!=0 and len(self.y_col)!=0):
             print(self.x_col)
             print(self.y_col)
-        filename,_=QFileDialog.getOpenFileName(self,"Open File","","All Files(*)")
-        if filename:
-            # print("Open")
-            get=False
-            sep=self.sep.text()
-            # print(sep)
-            if filename.endswith(".csv"):
-                if len(sep)>0:
-                    self.df=pd.read_csv(filename,sep=sep)
-                else:
-                    self.df=pd.read_csv(filename)
-                get=True
-            if filename.endswith(".xlsx"):
-                if len(sep)>0:
-                    self.df=pd.read_excel(filename,sep=sep)
-                else:
-                    self.df=pd.read_excel(filename)
-                get=True
+
+        res=Open_Datafile(self,self.sep)
+
+        if res[0]==None:
+            return
+        
+        if res[0]==False:
+            QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
+            return
+                
+        self.df=res[1]
             
-            if not get:
-                # print("Not able to open data file")
-                QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
-                return
-            
-            self.x_col,self.y_col=[],[]
-            
-            self.data_split=SplitWindow(list(self.df.columns),self.x_col,self.y_col)
-            self.data_split.show()
+        self.x_col,self.y_col=[],[]
+        
+        self.data_split=SplitWindow(list(self.df.columns),self.x_col,self.y_col)
+        self.data_split.show()
 
     def closeEvent(self,event):
         if self.data_split!=None:

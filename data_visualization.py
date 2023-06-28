@@ -6,39 +6,7 @@ from PyQt5.QtGui import QPainter,QColor,QStandardItemModel,QStandardItem
 from random import randint as rand
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt
-
-class ChartView(QChartView):
-    def __init__(self,chart):
-        super().__init__(chart)
-        self.chart=chart
-        self.start_pos=None
-
-
-    def wheelEvent(self, event):
-        zoom,scale=1,1.10
-
-        if event.angleDelta().y()>=120 and zoom<3:
-            zoom*=1.25
-            self.chart.zoom(scale)
-
-        elif event.angleDelta().y()<=-120 and zoom>0.5:
-            zoom*=0.8
-            self.chart.zoom(1/scale)
-
-        
-    def mousePressEvent(self, event):
-        if event.button()==Qt.LeftButton:
-            self.setDragMode(QGraphicsView.ScrollHandDrag)
-            self.start_pos=event.pos()
-
-    def mouseMoveEvent(self, event):
-        if event.buttons()==Qt.LeftButton:
-            delta=self.start_pos-event.pos()
-            self.chart.scroll(delta.x(),-delta.y())
-            self.start_pos=event.pos()
-
-    def mouseReleaseEvent(self, event):
-        self.setDragMode(QGraphicsView.NoDrag)
+from CustomWidgets import ChartView
 
 
 class MainWindow(QMainWindow):

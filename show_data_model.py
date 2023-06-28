@@ -3,6 +3,7 @@ import pandas as pd
 from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QPushButton,QVBoxLayout,QTableView,QFileDialog,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect,QMessageBox
 from PyQt5.QtGui import QStandardItem,QStandardItemModel,QColor
 from PyQt5.QtCore import Qt
+from CustomFunction import Open_Datafile,apply_stylesheet
 
 
 class MainWindow(QMainWindow):
@@ -49,57 +50,30 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(widget)
 
-        self.apply_stylesheet()
-
-
-    def apply_stylesheet(self):
-        stylesheet=None
-        with open('data_model.qss', 'r') as f:
-            stylesheet = f.read()
-        f.close()
-
-        try:
-            self.setStyleSheet(stylesheet)
-        except:
-            pass
+        apply_stylesheet(self,'data_model.qss')
 
 
     def open_file(self):
-        filename,_=QFileDialog.getOpenFileName(self,"Open File","","All Files(*)")
-        if filename:
-            # print("Open")
-            df,get=None,False
-            sep=self.sep.text()
-            # print(sep)
-            if filename.endswith(".csv"):
-                if len(sep)>0:
-                    df=pd.read_csv(filename,sep=sep)
-                else:
-                    df=pd.read_csv(filename)
-                get=True
-            if filename.endswith(".xlsx"):
-                if len(sep)>0:
-                    df=pd.read_excel(filename,sep=sep)
-                else:
-                    df=pd.read_excel(filename)
-                get=True
-            
-            if not get:
-                # print("Not able to open data file")
-                QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
-                return
-            
-            columns=list(df.columns)
-            # print(columns)
-            self.model.setColumnCount(len(columns))
-            self.model.setHorizontalHeaderLabels(columns)
 
+        res=Open_Datafile(self,self.sep)
 
-            for ind,value in enumerate(df.values):
-                # print(df.value)
-                items=[QStandardItem(str(val)) for val in value]
+        if res[0]==None:
+            return
 
-                self.model.insertRow(ind,items)
+        if res[0]==False:
+            msg_box=QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
+            return
+        
+        df=res[1]   
+        columns=list(df.columns)
+        # print(columns)
+        self.model.setColumnCount(len(columns))
+        self.model.setHorizontalHeaderLabels(columns)
+
+        for ind,value in enumerate(df.values):
+            # print(df.value)
+            items=[QStandardItem(str(val)) for val in value]
+            self.model.insertRow(ind,items)
 
     
 

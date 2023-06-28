@@ -5,6 +5,7 @@ from PyQt5.QtCore import QPropertyAnimation,QEasingCurve
 from PyQt5.QtSvg import QSvgWidget
 from PyQt5.QtGui import QPixmap,QIcon,QDesktopServices
 from PyQt5.QtCore import QSize,Qt,QPoint,QRect,QUrl
+from CustomFunction import apply_stylesheet
 
 from graph_between_variables import MainWindow as Graph
 from show_data_model import MainWindow as DataModel
@@ -56,22 +57,13 @@ class MainWindow(QMainWindow):
     
 
         self.doStyling()
-        self.apply_stylesheet()
+        apply_stylesheet(self,"dashboard.qss")
 
         self.centralwidget.setLayout(self.mainLayout)
 
         self.setCentralWidget(self.centralwidget)
 
-    def apply_stylesheet(self):
-        stylesheet=None
-        with open("dashboard.qss","r") as f:
-            stylesheet=f.read()
-        f.close()
-
-        try:
-            self.setStyleSheet(stylesheet)
-        except:
-            pass
+    
 
     def visualize_data_function(self):
         self.toggle_window()

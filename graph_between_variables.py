@@ -5,42 +5,8 @@ from PyQt5.QtWidgets import QWidget, QMainWindow,QApplication,QComboBox,QGraphic
 from PyQt5.QtChart import QChart,QChartView,QValueAxis,QLineSeries,QScatterSeries
 from PyQt5.QtGui import QPainter,QColor,QFont
 from PyQt5.QtCore import Qt
-
-
-
-class ChartView(QChartView):
-    def __init__(self,chart):
-        super().__init__(chart)
-        self.chart=chart
-        self.start_pos=None
-
-
-    def wheelEvent(self, event):
-        # print("yes")
-        zoom,scale=1,1.10
-
-        if event.angleDelta().y()>=120 and zoom<3:
-            zoom*=1.25
-            self.chart.zoom(scale)
-
-        elif event.angleDelta().y()<=-120 and zoom>0.5:
-            zoom*=0.8
-            self.chart.zoom(1/scale)
-
-        
-    def mousePressEvent(self, event):
-        if event.button()==Qt.LeftButton:
-            self.setDragMode(QGraphicsView.ScrollHandDrag)
-            self.start_pos=event.pos()
-
-    def mouseMoveEvent(self, event):
-        if event.buttons()==Qt.LeftButton:
-            delta=self.start_pos-event.pos()
-            self.chart.scroll(delta.x(),-delta.y())
-            self.start_pos=event.pos()
-
-    def mouseReleaseEvent(self, event):
-        self.setDragMode(QGraphicsView.NoDrag)
+from CustomWidgets import ChartView,FirstButton
+from CustomFunction import Open_Datafile,apply_stylesheet
 
 
 class MainWindow(QMainWindow):
@@ -66,15 +32,8 @@ class MainWindow(QMainWindow):
         self.left_layout.addWidget(self.combo_second)
 
 
-        self.open_btn=QPushButton("Open File")
-        self.open_btn.clicked.connect(self.open_file_function)
-        self.open_btn.setObjectName("open_btn")
-        self.open_btn.setCursor(Qt.PointingHandCursor)
-        shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(8)
-        shadow.setColor(QColor(0, 0, 0, 100))
-        shadow.setOffset(0, 2)
-        self.open_btn.setGraphicsEffect(shadow)
+        self.open_btn=FirstButton("Open File","open_btn",self.open_file_function)
+
 
 
         self.sep=QLineEdit()
@@ -134,54 +93,32 @@ class MainWindow(QMainWindow):
         self.setupMenu()
 
         
-        self.apply_stylesheet()
-
-
-    def apply_stylesheet(self):
-        stylesheet=None
-        with open('graph.qss', 'r') as f:
-            stylesheet = f.read()
-        f.close()
-        try:
-            self.setStyleSheet(stylesheet)
-        except:
-            pass
+        apply_stylesheet(self,'graph.qss')
 
     
     def open_file_function(self):
         self.first_time_change=True
+
+        res=Open_Datafile(self,self.sep)
+
+        if res[0]==None:
+            return
+
+        if res[0]==False:
+            msg_box=QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
+            return
         
-        filename,_=QFileDialog.getOpenFileName(self,"Open File","","All Files(*)")
-        if filename:
-            get=False
-            sep=self.sep.text()
-            if filename.endswith(".csv"):
-                if len(sep)>0:
-                    self.dataFrame=pd.read_csv(filename,sep=sep)
-                else:
-                    self.dataFrame=pd.read_csv(filename)
-                get=True
-            if filename.endswith(".xlsx"):
-                if len(sep)>0:
-                    self.dataFrame=pd.read_excel(filename,sep=sep)
-                else:
-                    self.dataFrame=pd.read_csv(filename)
-                get=True
-            
-            if not get:
-                # print("Not able to open data file")
-                msg_box=QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
-                msg_box.setWindowFlags()
-                return
-            
-            self.combo_first.blockSignals(True)
-            self.combo_first.clear()
-            self.combo_first.blockSignals(False)
-            self.combo_second.blockSignals(True)
-            self.combo_second.clear()
-            self.combo_second.blockSignals(False)
-            self.combo_first.addItems(self.dataFrame.columns)
-            self.combo_second.addItems(self.dataFrame.columns)
+
+        self.dataFrame=res[1]
+
+        self.combo_first.blockSignals(True)
+        self.combo_first.clear()
+        self.combo_first.blockSignals(False)
+        self.combo_second.blockSignals(True)
+        self.combo_second.clear()
+        self.combo_second.blockSignals(False)
+        self.combo_first.addItems(self.dataFrame.columns)
+        self.combo_second.addItems(self.dataFrame.columns)
 
 
     def make_plot(self):
@@ -321,22 +258,8 @@ class MainWindow(QMainWindow):
         self.antialiasing_cb=QCheckBox()
         self.antialiasing_cb.toggled.connect(self.toggleAntialiasing)
 
-        reset_button=QPushButton("Reset Chart Axes")
-        reset_button.setObjectName("reset_btn")
-        reset_button.setCursor(Qt.PointingHandCursor)
-        shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(8)
-        shadow.setColor(QColor(0, 0, 0, 100))
-        shadow.setOffset(0, 2)
-        reset_button.setGraphicsEffect(shadow)
+        reset_button=FirstButton("Reset Chart Axes","reset_btn",self.resetChartZoom)
         
-        reset_button.clicked.connect(self.resetChartZoom)
-
-        # data_table_view=QTableView()
-        # data_table_view.setModel(self.model)
-        # data_table_view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        # data_table_view.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
         dock_form=QFormLayout()
         dock_form.setAlignment(Qt.AlignTop)
         theme_label=QLabel("Themes")
