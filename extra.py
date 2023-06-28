@@ -1,48 +1,90 @@
-from PyQt5.QtCore import Qt, QPropertyAnimation, QRect
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QPushButton
+import sys
+import typing
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtWidgets import QApplication,QMainWindow,QWidget,QListWidget,QListWidgetItem,QHBoxLayout
+from PyQt5.QtGui import QDrag,QPalette,QColor,QCursor
+from PyQt5.QtCore import QMimeData,Qt 
 
-class MainWindow(QWidget):
+
+class CustomListWidget(QListWidget):
+    def __init__(self):
+        super().__init__()
+        self.setAcceptDrops(True)
+        self.setDragEnabled(True)
+
+    # def mousePressEvent(self,event):
+    #     if event.button()==Qt.LeftButton:
+    #         items=self.selectedItems()
+    #         if(len(items)<=0):
+    #             return
+    #         drag=QDrag(self)
+    #         mime=QMimeData()
+    #         mime.setText(items[0].text())
+    #         drag.setMimeData(mime)
+    #         drag.exec(Qt.MoveAction)
+
+    #     super().mousePressEvent(event)
+
+    def startDrag(self, supportedActions):
+        items=self.selectedItems()
+        if len(items)<=0:
+            return
+
+        data=QMimeData()
+        data.setText(items[0].text())
+        drag=QDrag(self)
+        drag.setMimeData(data)
+        drag.exec(Qt.MoveAction)
+
+    
+    def dragEnterEvent(self,event):
+        if event.mimeData().hasText():
+            event.acceptProposedAction()
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasText():
+            event.acceptProposedAction()
+
+    def dropEvent(self, event):
+        if event.mimeData().hasText():
+            text=event.mimeData().text()
+            item=QListWidgetItem(str(text))
+            self.addItem(item)
+            event.acceptProposedAction()
+            event.setDropAction(Qt.MoveAction)
+
+            source=event.source()
+            source.takeItem(source.row(source.currentItem()))
+
+
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.sidebar_width = 200
-        self.sidebar_minimum_width = 50
-        self.is_sidebar_visible = True
+        self.list1=CustomListWidget()
+        self.list2=CustomListWidget()
 
-        layout = QVBoxLayout()
-        self.setLayout(layout)
+        widget=QWidget()
+        layout=QHBoxLayout()
+        layout.addWidget(self.list1)
+        layout.addWidget(self.list2)
+        widget.setLayout(layout)
+        self.setCentralWidget(widget)
 
-        self.sidebar = QWidget()
-        self.sidebar.setStyleSheet("background-color: lightgray;")
-        self.sidebar.setMinimumWidth(self.sidebar_minimum_width)
-        self.sidebar_layout = QVBoxLayout(self.sidebar)
-        self.sidebar_layout.setAlignment(Qt.AlignTop)
-        layout.addWidget(self.sidebar)
+        self.add_items()
 
-        self.body = QWidget()
-        self.body.setStyleSheet("background-color: white;")
-        layout.addWidget(self.body)
+    def add_items(self):
+        for i in range(1,6):
+            item=QListWidgetItem("List_1: "+str(i))
+            self.list1.addItem(item)
+        for i in range(1,6):
+            item=QListWidgetItem("List_2: "+str(i))
+            self.list2.addItem(item)
 
-        self.toggle_button = QPushButton("Toggle Sidebar")
-        self.toggle_button.clicked.connect(self.toggle_sidebar)
-        self.sidebar_layout.addWidget(self.toggle_button)
+    
 
-    def toggle_sidebar(self):
-        if self.is_sidebar_visible:
-            self.animate_sidebar_width(self.sidebar_width, 0)
-        else:
-            self.animate_sidebar_width(0, self.sidebar_width)
-        self.is_sidebar_visible = not self.is_sidebar_visible
-
-    def animate_sidebar_width(self, start_width, end_width):
-        animation = QPropertyAnimation(self.sidebar, b"geometry")
-        animation.setDuration(300)
-        animation.setStartValue(QRect(0, 0, start_width, self.sidebar.height()))
-        animation.setEndValue(QRect(0, 0, end_width, self.sidebar.height()))
-        animation.start()
-
-if __name__ == "__main__":
-    app = QApplication([])
-    window = MainWindow()
+if __name__=="__main__":
+    app=QApplication(sys.argv)
+    window=MainWindow()
     window.show()
-    app.exec_()
+    sys.exit(app.exec_())

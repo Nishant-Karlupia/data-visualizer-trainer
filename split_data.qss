@@ -1,0 +1,48 @@
+QListWidget {
+    background-color: #f0bdbd;
+    /* border: 1px solid #CCCCCC; */
+    border-radius: 5px;
+    font-family: consolas;
+    font-size: 20px;
+}
+
+QListWidget::Item {
+    background-color: #f0bdbd;
+    padding: 5px;
+}
+
+QListWidget::Item:hover {
+    background-color: #987676;
+}
+
+QListWidget::Item:selected {
+    background-color: #d77070;
+}
+
+QPushButton#confirm_btn {
+    background-color: #381954;
+    color: white;
+    font-size: 25px;
+    font-family: consolas;
+    min-height: 35px;
+    border-radius: 17px;
+}
+QPushButton#confirm_btn:disabled {
+    background-color: gray;
+}
+
+QPushButton#close_btn {
+    background-color: rgb(228, 45, 45);
+    color: white;
+    font-size: 25px;
+    font-family: consolas;
+    min-height: 35px;
+    border-radius: 17px;
+}
+
+QLabel#train,QLabel#target
+{
+    font-size: 20px;
+    font-family: consolas;
+}
+
