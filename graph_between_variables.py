@@ -1,12 +1,11 @@
 import sys
-import pandas as pd
 import numpy as np
-from PyQt5.QtWidgets import QWidget, QMainWindow,QApplication,QComboBox,QGraphicsView,QVBoxLayout,QHBoxLayout,QPushButton,QFileDialog,QLineEdit,QTextEdit,QDockWidget,QCheckBox,QTableView,QHeaderView,QFormLayout,QLabel,QGraphicsDropShadowEffect,QMessageBox
-from PyQt5.QtChart import QChart,QChartView,QValueAxis,QLineSeries,QScatterSeries
-from PyQt5.QtGui import QPainter,QColor,QFont
 from PyQt5.QtCore import Qt
-from CustomWidgets import ChartView,FirstButton
+from PyQt5.QtWidgets import QWidget, QMainWindow,QApplication,QComboBox,QVBoxLayout,QHBoxLayout,QLineEdit,QDockWidget,QCheckBox,QFormLayout,QLabel,QMessageBox
+from PyQt5.QtChart import QChart,QValueAxis,QLineSeries,QScatterSeries
 from CustomFunction import Open_Datafile,apply_stylesheet
+from CustomWidgets import ChartView,FirstButton
+from PyQt5.QtGui import QPainter,QFont
 
 
 class MainWindow(QMainWindow):

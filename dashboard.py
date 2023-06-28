@@ -1,10 +1,9 @@
 import sys
 from PyQt5 import uic
-from PyQt5.QtWidgets import QMainWindow,QApplication,QHBoxLayout,QFrame,QDesktopWidget,QPushButton,QSizePolicy
+from PyQt5.QtWidgets import QMainWindow,QApplication,QDesktopWidget,QPushButton,QSizePolicy
 from PyQt5.QtCore import QPropertyAnimation,QEasingCurve
-from PyQt5.QtSvg import QSvgWidget
 from PyQt5.QtGui import QPixmap,QIcon,QDesktopServices
-from PyQt5.QtCore import QSize,Qt,QPoint,QRect,QUrl
+from PyQt5.QtCore import Qt,QPoint,QRect,QUrl
 from CustomFunction import apply_stylesheet
 
 from graph_between_variables import MainWindow as Graph

@@ -1,8 +1,7 @@
 import sys
-import pandas as pd
-from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QPushButton,QVBoxLayout,QTableView,QFileDialog,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect,QMessageBox
-from PyQt5.QtGui import QStandardItem,QStandardItemModel,QColor
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QPushButton,QVBoxLayout,QTableView,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect,QMessageBox
+from PyQt5.QtGui import QStandardItem,QStandardItemModel,QColor
 from CustomFunction import Open_Datafile,apply_stylesheet
 
 
