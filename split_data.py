@@ -50,7 +50,7 @@ class SplitWindow(QMainWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-        apply_stylesheet(self,'split_data.qss')
+        apply_stylesheet(self,'styles/split_data.qss')
 
     def work_done(self,x_col,y_col):
         x_col.clear()
@@ -96,7 +96,7 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(widget)
 
-        apply_stylesheet(self,'split_data.qss')
+        apply_stylesheet(self,'styles/split_data.qss')
 
 
     def open_file(self):

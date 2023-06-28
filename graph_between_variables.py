@@ -93,7 +93,7 @@ class MainWindow(QMainWindow):
         self.setupMenu()
 
         
-        apply_stylesheet(self,'graph.qss')
+        apply_stylesheet(self,'styles/graph.qss')
 
     
     def open_file_function(self):

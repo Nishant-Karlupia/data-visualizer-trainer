@@ -57,7 +57,7 @@ class MainWindow(QMainWindow):
     
 
         self.doStyling()
-        apply_stylesheet(self,"dashboard.qss")
+        apply_stylesheet(self,"styles/dashboard.qss")
 
         self.centralwidget.setLayout(self.mainLayout)
 

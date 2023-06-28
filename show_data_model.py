@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(widget)
 
-        apply_stylesheet(self,'data_model.qss')
+        apply_stylesheet(self,'styles/data_model.qss')
 
 
     def open_file(self):
