@@ -1,7 +1,7 @@
 import sys
-from PyQt5.QtWidgets import QGraphicsDropShadowEffect,QGraphicsView,QPushButton,QListWidget,QListWidgetItem
+from PyQt5.QtWidgets import QGraphicsDropShadowEffect,QGraphicsView,QPushButton,QListWidget,QListWidgetItem,QDialog,QLabel,QVBoxLayout,QHBoxLayout
 from PyQt5.QtChart import QChartView
-from PyQt5.QtGui import QColor,QDrag
+from PyQt5.QtGui import QColor,QDrag,QPixmap
 from PyQt5.QtCore import Qt,QMimeData
 
 
@@ -94,3 +94,51 @@ class CustomListWidget(QListWidget):
             source=event.source()
             source.takeItem(source.row(source.currentItem()))
 
+
+
+
+class CustomMessageBox(QDialog):
+    def __init__(self,msg_heading,msg_txt):
+        super().__init__()
+
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setMinimumSize(500,200)
+        # self.setAttribute(Qt.WA_TranslucentBackground)
+        main_layout=QVBoxLayout()
+
+
+        error_layout=QHBoxLayout()
+        error_icon=QLabel()
+        error_icon.setPixmap(QPixmap("icons/alert-triangle.svg"))
+        error_icon.setObjectName("error_icon")
+        error_label=QLabel(msg_heading)
+        error_label.setObjectName("error_label")
+        # error_layout.addWidget(error_icon)
+        error_layout.addWidget(error_label)
+        error_layout.setAlignment(error_label,Qt.AlignHCenter)
+
+        ok_btn=FirstButton("OK","ok",self.close)
+
+        msg_layout=QHBoxLayout()
+        msg_icon=QLabel()
+        msg_icon.setPixmap(QPixmap("icons/alert-circle.svg"))
+        msg_icon.setObjectName("msg_icon")
+        error_msg=QLabel(msg_txt)
+        error_msg.setObjectName("error_msg")
+        msg_layout.addWidget(msg_icon)
+        msg_layout.addWidget(error_msg)
+        msg_layout.setSpacing(0)
+        msg_layout.setContentsMargins(0,0,0,0)
+        
+
+        main_layout.addLayout(error_layout)
+        main_layout.addLayout(msg_layout)
+        main_layout.addWidget(ok_btn)
+        self.setLayout(main_layout)
+
+        with open("styles/customdialog.qss","r") as f:
+            self.setStyleSheet(f.read())
+        f.close()
+
+        # self.setAttribute(Qt.WA_DeleteOnClose)
+        

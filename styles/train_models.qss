@@ -26,4 +26,24 @@ QLineEdit#separator {
   /* margin-left: 100px; */
 }
 
+QTextEdit#train_report
+{
+    font-family: consolas;
+    font-size: 25px;
+}
+
+QPushButton#train_btn
+{
+    background-color: #532a7a;
+    color: yellow;
+    margin: 5px auto;
+    font-family: consolas;
+    padding: 5px 15px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 16px;
+    min-width: 120px;
+    font-size: 22px;
+    font-family: consolas;
+}
 

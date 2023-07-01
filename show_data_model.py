@@ -1,9 +1,10 @@
 import sys
+from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QTableView,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect,QMessageBox
 from PyQt5.QtGui import QStandardItem,QStandardItemModel
 from CustomFunction import Open_Datafile,apply_stylesheet
-from CustomWidgets import FirstButton
+from CustomWidgets import FirstButton,CustomMessageBox
 
 
 class MainWindow(QMainWindow):
@@ -12,6 +13,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("Show the data")
         self.setMinimumSize(500,500)
+        self.msg_box=None
 
         widget=QWidget()
         self.open_btn=FirstButton("Open File","open_btn",self.open_file)
@@ -49,7 +51,8 @@ class MainWindow(QMainWindow):
             return
 
         if res[0]==False:# file not an excel or csv
-            msg_box=QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
+            self.msg_box=CustomMessageBox("Error","Make sure that file is .xlsx or .csv")
+            self.msg_box.show()
             return
         
         df=res[1]   
@@ -62,6 +65,10 @@ class MainWindow(QMainWindow):
             # print(df.value)
             items=[QStandardItem(str(val)) for val in value]
             self.model.insertRow(ind,items)
+
+    def closeEvent(self, event):
+        if self.msg_box!=None:
+            self.msg_box.close()
 
     
 

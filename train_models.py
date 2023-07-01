@@ -2,7 +2,7 @@ import sys
 import typing
 from PyQt5.QtCore import QObject, Qt,QThread,pyqtSignal
 from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QLineEdit,QHBoxLayout,QMessageBox,QLabel,QGridLayout,QFrame,QTextEdit
-from CustomWidgets import CustomListWidget,FirstButton
+from CustomWidgets import CustomListWidget,FirstButton,CustomMessageBox
 from CustomFunction import apply_stylesheet,Open_Datafile
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
@@ -109,8 +109,9 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.df,self.data_split,self.x_col,self.y_col=None,None,[],[]
+        self.msg_box=None
 
-        self.setWindowTitle("Show the data")
+        self.setWindowTitle("Model Trainig")
         self.setMinimumSize(500,500)
 
         widget=QWidget()
@@ -124,12 +125,16 @@ class MainWindow(QMainWindow):
 
 
         frame=QFrame()
-        self.train_btn=FirstButton("Train","train",self.train_model_function)
+        self.train_btn=FirstButton("Train","train_btn",self.train_model_function)
+        # self.train_btn.setDisabled(True)
         self.train_report=QTextEdit()
         self.train_report.setReadOnly(True)
-        frame_layout=QHBoxLayout()
-        frame_layout.addWidget(self.train_btn)
+        self.train_report.setText("No data available")
+        self.train_report.setObjectName("train_report")
+        frame_layout=QVBoxLayout()
         frame_layout.addWidget(self.train_report)
+        frame_layout.addWidget(self.train_btn)
+        frame_layout.setAlignment(self.train_btn, Qt.AlignHCenter)
         frame.setLayout(frame_layout)
 
         hbox=QHBoxLayout()
@@ -144,7 +149,7 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(widget)
 
-        apply_stylesheet(self,'styles/split_data.qss')
+        apply_stylesheet(self,'styles/train_models.qss')
 
 
     def open_file(self):
@@ -158,7 +163,9 @@ class MainWindow(QMainWindow):
             return
         
         if res[0]==False:# file not an excel or csv file
-            QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
+            # QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
+            self.msg_box=CustomMessageBox("Error","Make sure that file is .xlsx or .csv")
+            self.msg_box.show()
             return
                 
         self.df=res[1]
@@ -198,6 +205,9 @@ class MainWindow(QMainWindow):
     def closeEvent(self,event):
         if self.data_split!=None:
             self.data_split.close()
+
+        if self.msg_box!=None:
+            self.msg_box.close()
             
     
 

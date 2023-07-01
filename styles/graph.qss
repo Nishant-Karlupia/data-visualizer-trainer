@@ -110,38 +110,3 @@ QMenu::item {
     padding: 5px 20px;             
     font-size: 20px;
 }
-
-
-
-QMessageBox {
-  background-color: rgb(37, 35, 68);
-  border: 2px solid #555555;
-  font-size: 14px;
-}
-
-QMessageBox QLabel {
-  color: white;
-  font-family: consolas;
-  font-size: 18px;
-}
-
-QMessageBox QPushButton {
-  background-color: #361a50;
-  color: white;
-  padding: 5px 15px;
-  text-align: center;
-  text-decoration: none;
-  border-radius: 16px;
-  min-width: 80px;
-  font-size: 22px;
-  font-family: consolas;
-}
-
-QMessageBox QPushButton:hover {
-  background-color: #5c2c89;
-}
-QMessageBox QLabel#qt_msgbox_label::title  {
-  color: red;
-  font-size: 18px;
-  font-weight: bold;
-}

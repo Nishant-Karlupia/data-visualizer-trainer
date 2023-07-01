@@ -1,0 +1,42 @@
+QLabel#msg_icon
+{
+    max-width: 50px;
+}
+QLabel#error_label
+{
+    font-size: 25px;
+    font-family: consolas;
+    text-align: left;
+    /* border: 3px solid red; */
+    
+}
+QLabel#msg_icon,QLabel#error_msg
+{
+    margin-bottom: 35px;
+    padding-top: 15px;
+    border-top: 2px solid gray;
+    /* border: 3px solid red; */
+}
+QLabel#error_msg
+{
+    font-size: 25px;
+    font-family: consolas;
+    padding-left: 10px;
+    /* border: 3px solid red; */
+}
+QDialog
+{
+    background-color: rgb(198, 228, 192);
+    border: 2px solid rgb(128, 128, 128);
+    /* border-radius: 5px; */
+}
+
+QPushButton#ok
+{
+    background-color: #9129f3;
+    font-size: 25px;
+    font-family: consolas;
+    color: white;
+    border-radius: 12px;
+}
+

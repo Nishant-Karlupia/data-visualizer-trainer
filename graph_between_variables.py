@@ -1,10 +1,11 @@
 import sys
+from PyQt5 import QtGui
 import numpy as np
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QMainWindow,QApplication,QComboBox,QVBoxLayout,QHBoxLayout,QLineEdit,QDockWidget,QCheckBox,QFormLayout,QLabel,QMessageBox
 from PyQt5.QtChart import QChart,QValueAxis,QLineSeries,QScatterSeries
 from CustomFunction import Open_Datafile,apply_stylesheet
-from CustomWidgets import ChartView,FirstButton
+from CustomWidgets import ChartView,FirstButton,CustomMessageBox
 from PyQt5.QtGui import QPainter,QFont
 
 
@@ -16,6 +17,7 @@ class MainWindow(QMainWindow):
 
         self.dataFrame=None
         self.first_time_change=True
+        self.msg_box=None
 
         self.left_layout=QVBoxLayout()
         self.right_layout=QVBoxLayout()
@@ -105,7 +107,8 @@ class MainWindow(QMainWindow):
             return
 
         if res[0]==False:# file not an excel or csv
-            msg_box=QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
+            self.msg_box=CustomMessageBox("Error","Make sure that file is .xlsx or .csv")
+            self.msg_box.show()
             return
         
 
@@ -328,6 +331,10 @@ class MainWindow(QMainWindow):
         view_menu=menu_bar.addMenu('View')
         view_menu.addAction(self.toggle_dock_tools_act)
             
+    
+    def closeEvent(self,event):
+        if self.msg_box!=None:
+            self.msg_box.close()
 
 
 
