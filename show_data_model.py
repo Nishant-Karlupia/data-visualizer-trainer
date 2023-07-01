@@ -1,8 +1,9 @@
 import sys
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QPushButton,QVBoxLayout,QTableView,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect,QMessageBox
-from PyQt5.QtGui import QStandardItem,QStandardItemModel,QColor
+from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QTableView,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect,QMessageBox
+from PyQt5.QtGui import QStandardItem,QStandardItemModel
 from CustomFunction import Open_Datafile,apply_stylesheet
+from CustomWidgets import FirstButton
 
 
 class MainWindow(QMainWindow):
@@ -13,23 +14,11 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(500,500)
 
         widget=QWidget()
-        self.open_btn=QPushButton("Open File")
-        self.open_btn.clicked.connect(self.open_file)
-        self.open_btn.setObjectName("open_btn")
-
-        shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(8)
-        shadow.setColor(QColor(0, 0, 0, 100))
-        shadow.setOffset(0, 2)
-        self.open_btn.setCursor(Qt.PointingHandCursor)
-        self.open_btn.setGraphicsEffect(shadow)
-        
-        
+        self.open_btn=FirstButton("Open File","open_btn",self.open_file)
+                
         self.sep=QLineEdit()
         self.sep.setPlaceholderText("Enter the separator (; , ...etc)")
         self.sep.setObjectName("separator")
-
-        
 
         self.model=QStandardItemModel()
         table=QTableView()
@@ -56,10 +45,10 @@ class MainWindow(QMainWindow):
 
         res=Open_Datafile(self,self.sep)
 
-        if res[0]==None:
+        if res[0]==None:# no file opened
             return
 
-        if res[0]==False:
+        if res[0]==False:# file not an excel or csv
             msg_box=QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
             return
         

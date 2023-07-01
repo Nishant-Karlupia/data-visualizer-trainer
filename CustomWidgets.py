@@ -5,8 +5,6 @@ from PyQt5.QtGui import QColor,QDrag
 from PyQt5.QtCore import Qt,QMimeData
 
 
-
-
 class ChartView(QChartView):
     def __init__(self,chart):
         super().__init__(chart)

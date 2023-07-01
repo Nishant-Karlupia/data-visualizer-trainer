@@ -96,14 +96,15 @@ class MainWindow(QMainWindow):
 
     
     def open_file_function(self):
+
         self.first_time_change=True
 
         res=Open_Datafile(self,self.sep)
 
-        if res[0]==None:
+        if res[0]==None:# no file opened
             return
 
-        if res[0]==False:
+        if res[0]==False:# file not an excel or csv
             msg_box=QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
             return
         
@@ -166,9 +167,7 @@ class MainWindow(QMainWindow):
         self.axis_y.setTitleFont(QFont("consolas",13))
         if y_dtype in int_types:
             self.axis_y.setLabelFormat("%i")
-        
-        
-
+            
 
         self.chart=QChart()
         self.chart.legend().hide()

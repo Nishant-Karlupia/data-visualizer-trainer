@@ -1,8 +1,46 @@
 import sys
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QLineEdit,QHBoxLayout,QMessageBox,QLabel,QGridLayout
+import typing
+from PyQt5.QtCore import QObject, Qt,QThread,pyqtSignal
+from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QLineEdit,QHBoxLayout,QMessageBox,QLabel,QGridLayout,QFrame,QTextEdit
 from CustomWidgets import CustomListWidget,FirstButton
 from CustomFunction import apply_stylesheet,Open_Datafile
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score
+
+
+class Worker(QThread):
+
+    matrix=pyqtSignal(dict)
+
+    def __init__(self,x_train,y_train,x_test,y_test):
+        super().__init__()
+        self.x_train=x_train
+        self.y_train=y_train
+        self.x_test=x_test
+        self.y_test=y_test
+
+    def run(self):
+        reg=LinearRegression()
+        reg.fit(self.x_train,self.y_train)
+        y_pred=reg.predict(self.x_test)
+        mse=mean_squared_error(self.y_test,y_pred)
+        mae=mean_absolute_error(self.y_test,y_pred)
+        cod=r2_score(self.y_test,y_pred)
+        score=reg.score(self.x_test,self.y_test)
+
+        matrix={
+            "Score":round(score,3),
+            "Coefficient of determination":round(cod,3),
+            "Mean Absolute Error":round(mae,3),
+            "Mean Squared Error":round(mse,3)
+        }
+
+        self.matrix.emit(matrix)
+        # self.matrix.emit(0)
+
+
+
 
 class SplitWindow(QMainWindow):
     def __init__(self,columns,x_col,y_col):
@@ -44,6 +82,7 @@ class SplitWindow(QMainWindow):
 
         layout.addLayout(item_layout)
         layout.addLayout(btn_layout)
+
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
@@ -79,8 +118,19 @@ class MainWindow(QMainWindow):
         
         
         self.sep=QLineEdit()
+
         self.sep.setPlaceholderText("Enter the separator (; , ...etc)")
         self.sep.setObjectName("separator")
+
+
+        frame=QFrame()
+        self.train_btn=FirstButton("Train","train",self.train_model_function)
+        self.train_report=QTextEdit()
+        self.train_report.setReadOnly(True)
+        frame_layout=QHBoxLayout()
+        frame_layout.addWidget(self.train_btn)
+        frame_layout.addWidget(self.train_report)
+        frame.setLayout(frame_layout)
 
         hbox=QHBoxLayout()
         hbox.addWidget(self.open_btn)
@@ -88,6 +138,7 @@ class MainWindow(QMainWindow):
         
         layout=QVBoxLayout()
         layout.addLayout(hbox)
+        layout.addWidget(frame)
         widget.setLayout(layout)
 
 
@@ -116,6 +167,31 @@ class MainWindow(QMainWindow):
         
         self.data_split=SplitWindow(list(self.df.columns),self.x_col,self.y_col)
         self.data_split.show()
+
+    
+    def train_model_function(self):
+        # print("hello world")
+        if len(self.x_col)==0 or len(self.y_col)==0:
+            return
+        
+        X,y=self.df[list(self.x_col)],self.df[list(self.y_col)]
+        # print(X)
+        # print(y)
+        x_train,x_test,y_train,y_test=train_test_split(X,y,test_size=0.3)
+        
+        self.worker=Worker(x_train,y_train,x_test,y_test)
+        self.worker.matrix.connect(self.print_report)
+        self.worker.start()
+
+        pass
+
+    def print_report(self,matrix):
+        report=""
+        for key,val in matrix.items():
+            report+=str(key)+" : "+str(val)+"\n"
+            # print(key,val)
+        # print(matrix)
+        self.train_report.setText(report)
 
 
     # close all second-window opened

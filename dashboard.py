@@ -20,26 +20,26 @@ class MainWindow(QMainWindow):
         super().__init__()
         uic.loadUi("dashboard.ui",self)
 
-        self.isScreenMaximized=False
+        self.isScreenMaximized=False # change icon of maximization button based on current value
         self.window_width,self.window_height=self.width(),self.height()
         self.x_pos,self.y_pos=300,80
 
         self.desktop=QDesktopWidget()
-        # print(self.desktop.screenGeometry())
-        # self.setGeometry(self.x_pos,self.y_pos,self.window_width,self.window_height)
+        self.previous_pos=self.pos() # window movement when dragging the screen with mouseEvents
 
-        self.previous_pos=self.pos()
 
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
+        # minimize::toggle-window-screen-size::close-window
         self.operational.setMaximumHeight(50)
+        # view-data::visualize-data::...
         self.sidebar.setMaximumWidth(200)
 
         self.operational.setLayout(self.operational_layout)
         self.body_frame.setLayout(self.layout_on_body_frame)
 
-        self.toggle_sidebar.clicked.connect(self.toggle_window)
+        self.toggle_sidebar.clicked.connect(self.toggle_window)# button to toggle the width of the sidebar
         self.visualize_data_btn.clicked.connect(self.visualize_data_function)
         self.minimize_btn.clicked.connect(self.show_minimized)
         self.maximize_btn.clicked.connect(self.show_maximized)
@@ -53,16 +53,13 @@ class MainWindow(QMainWindow):
 
         self.sidebar.setLayout(self.itemLayout)
 
-    
-
         self.doStyling()
         apply_stylesheet(self,"styles/dashboard.qss")
 
-        self.centralwidget.setLayout(self.mainLayout)
+        self.centralwidget.setLayout(self.mainLayout)# it is QWidget of .ui file and not QMainWindow
 
-        self.setCentralWidget(self.centralwidget)
+        self.setCentralWidget(self.centralwidget)# QMainWindow->QWidget
 
-    
 
     def visualize_data_function(self):
         self.toggle_window()
@@ -79,6 +76,8 @@ class MainWindow(QMainWindow):
         data_model_widget=DataModel()
         self.layout_on_body_frame.addWidget(data_model_widget)
 
+
+    # clear layout of main-body-frame so components can be added or removed dynamically
     def clear_layout(self,layout):
         while layout.count():
             item = layout.takeAt(0)
@@ -90,10 +89,8 @@ class MainWindow(QMainWindow):
                 if nested_layout:
                     self.clear_layout(nested_layout)
             del item
-
-    
-
-
+   
+    # toggle the width of the sidebar
     def toggle_window(self):
         width,newWidth=self.sidebar.width(),0
 
@@ -107,7 +104,7 @@ class MainWindow(QMainWindow):
         self.animation.setEndValue(newWidth)
         self.animation.start()
 
-
+    # minimize the window using opacity factor of the window
     def show_minimized(self):
         self.animate_minimization=QPropertyAnimation(self,b'windowOpacity')
         self.animate_minimization.setDuration(300)
@@ -123,6 +120,7 @@ class MainWindow(QMainWindow):
         self.showMinimized()
         self.setVisible(True)
 
+    # maximize the window screen or restore the window screen size to normal state
     def show_maximized(self):
 
         icon=None
@@ -131,7 +129,7 @@ class MainWindow(QMainWindow):
             icon=QPixmap("icons/arrow-up-right.svg")
 
             self.animate_normal=QPropertyAnimation(self,b'geometry')
-            self.animate_normal.setDuration(300)
+            self.animate_normal.setDuration(100)
             self.animate_normal.setStartValue(self.geometry())
             self.animate_normal.setEndValue(QRect(self.x_pos,self.y_pos,self.window_width,self.window_height))
             self.animate_normal.start()
@@ -139,7 +137,7 @@ class MainWindow(QMainWindow):
             self.isScreenMaximized=True
             icon=QPixmap("icons/arrow-down-left.svg")
             self.animate_maximization=QPropertyAnimation(self,b'geometry')
-            self.animate_maximization.setDuration(300)
+            self.animate_maximization.setDuration(100)
             self.animate_maximization.setStartValue(self.geometry())
             self.animate_maximization.setEndValue(self.desktop.screenGeometry())
             self.animate_maximization.start()
@@ -199,6 +197,8 @@ class MainWindow(QMainWindow):
         # print(self.body_frame.geometry())
 
 
+    # override the mouseEvents to make movement of the screen possible
+
     def mousePressEvent(self,event):
         """previous position"""
         self.previous_pos=event.globalPos()
@@ -209,8 +209,6 @@ class MainWindow(QMainWindow):
         new_pos=QPoint(event.globalPos()-self.previous_pos)
         self.move(self.x()+new_pos.x(),self.y()+new_pos.y())
         self.previous_pos=event.globalPos()
-
-
 
 
 
