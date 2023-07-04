@@ -7,6 +7,7 @@ from PyQt5.QtChart import QChart,QValueAxis,QLineSeries,QScatterSeries
 from CustomFunction import Open_Datafile,apply_stylesheet
 from CustomWidgets import ChartView,FirstButton,CustomMessageBox
 from PyQt5.QtGui import QPainter,QFont
+from globalData.stateStore import store
 
 
 class MainWindow(QMainWindow):
@@ -108,6 +109,7 @@ class MainWindow(QMainWindow):
 
         if res[0]==False:# file not an excel or csv
             self.msg_box=CustomMessageBox("Error","Make sure that file is .xlsx or .csv")
+            store.add(self.msg_box)
             self.msg_box.show()
             return
         
@@ -333,8 +335,7 @@ class MainWindow(QMainWindow):
             
     
     def closeEvent(self,event):
-        if self.msg_box!=None:
-            self.msg_box.close()
+        store.close()
 
 
 

@@ -1,8 +1,10 @@
 import sys
+from PyQt5 import QtGui
 from PyQt5.QtWidgets import QGraphicsDropShadowEffect,QGraphicsView,QPushButton,QListWidget,QListWidgetItem,QDialog,QLabel,QVBoxLayout,QHBoxLayout
 from PyQt5.QtChart import QChartView
 from PyQt5.QtGui import QColor,QDrag,QPixmap
 from PyQt5.QtCore import Qt,QMimeData
+from globalData.stateStore import store
 
 
 class ChartView(QChartView):
@@ -140,5 +142,7 @@ class CustomMessageBox(QDialog):
             self.setStyleSheet(f.read())
         f.close()
 
-        # self.setAttribute(Qt.WA_DeleteOnClose)
+    def closeEvent(self, event):
+        store.remove(self)
+        event.accept()
         

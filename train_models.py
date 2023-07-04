@@ -7,6 +7,7 @@ from CustomFunction import apply_stylesheet,Open_Datafile
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score
+from globalData.stateStore import store
 
 
 class Worker(QThread):
@@ -165,6 +166,7 @@ class MainWindow(QMainWindow):
         if res[0]==False:# file not an excel or csv file
             # QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
             self.msg_box=CustomMessageBox("Error","Make sure that file is .xlsx or .csv")
+            store.add(self.msg_box)
             self.msg_box.show()
             return
                 
@@ -173,6 +175,7 @@ class MainWindow(QMainWindow):
         self.x_col,self.y_col=[],[]
         
         self.data_split=SplitWindow(list(self.df.columns),self.x_col,self.y_col)
+        store.add(self.data_split)
         self.data_split.show()
 
     
@@ -203,12 +206,7 @@ class MainWindow(QMainWindow):
 
     # close all second-window opened
     def closeEvent(self,event):
-        if self.data_split!=None:
-            self.data_split.close()
-
-        if self.msg_box!=None:
-            self.msg_box.close()
-            
+        store.close()
     
 
 if __name__=="__main__":

@@ -1,11 +1,11 @@
 import sys
-from PyQt5 import uic
+from PyQt5 import QtGui, uic
 from PyQt5.QtWidgets import QMainWindow,QApplication,QDesktopWidget,QPushButton,QSizePolicy
 from PyQt5.QtCore import QPropertyAnimation,QEasingCurve
 from PyQt5.QtGui import QPixmap,QIcon,QDesktopServices
 from PyQt5.QtCore import Qt,QPoint,QRect,QUrl
 from CustomFunction import apply_stylesheet
-
+from globalData.stateStore import store
 from graph_between_variables import MainWindow as Graph
 from show_data_model import MainWindow as DataModel
 
@@ -209,6 +209,11 @@ class MainWindow(QMainWindow):
         new_pos=QPoint(event.globalPos()-self.previous_pos)
         self.move(self.x()+new_pos.x(),self.y()+new_pos.y())
         self.previous_pos=event.globalPos()
+
+    def closeEvent(self,event):
+        # store.print()
+        store.close()
+        event.accept()
 
 
 
