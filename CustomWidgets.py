@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QGraphicsDropShadowEffect,QGraphicsView,QPushButton,
 from PyQt5.QtChart import QChartView
 from PyQt5.QtGui import QColor,QDrag,QPixmap
 from PyQt5.QtCore import Qt,QMimeData
-from globalData.stateStore import store
+from globalParams.stateStore import store
 
 
 class ChartView(QChartView):

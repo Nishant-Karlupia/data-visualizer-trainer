@@ -5,12 +5,15 @@ from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QTableV
 from PyQt5.QtGui import QStandardItem,QStandardItemModel
 from CustomFunction import Open_Datafile,apply_stylesheet
 from CustomWidgets import FirstButton,CustomMessageBox
-from globalData.stateStore import store
+from globalParams.stateStore import store
+from globalParams.dataStore import globalData
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.dataFrame=globalData.give_data()
 
         self.setWindowTitle("Show the data")
         self.setMinimumSize(500,500)
@@ -42,6 +45,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(widget)
 
         apply_stylesheet(self,'styles/data_model.qss')
+        self.show_model_function()
 
 
     def open_file(self):
@@ -57,13 +61,22 @@ class MainWindow(QMainWindow):
             self.msg_box.show()
             return
         
-        df=res[1]   
-        columns=list(df.columns)
+        self.dataFrame=res[1]   
+
+        self.show_model_function()
+
+    def show_model_function(self):
+
+        if self.dataFrame is None:
+            return
+
+        globalData.assign_data(self.dataFrame)
+        columns=list(self.dataFrame.columns)
         # print(columns)
         self.model.setColumnCount(len(columns))
         self.model.setHorizontalHeaderLabels(columns)
 
-        for ind,value in enumerate(df.values):
+        for ind,value in enumerate(self.dataFrame.values):
             # print(df.value)
             items=[QStandardItem(str(val)) for val in value]
             self.model.insertRow(ind,items)

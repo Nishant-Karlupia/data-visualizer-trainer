@@ -1,13 +1,14 @@
 import sys
 from PyQt5 import QtGui, uic
-from PyQt5.QtWidgets import QMainWindow,QApplication,QDesktopWidget,QPushButton,QSizePolicy
+from PyQt5.QtWidgets import QMainWindow,QApplication,QDesktopWidget,QPushButton,QSizePolicy,QStatusBar,QLabel
 from PyQt5.QtCore import QPropertyAnimation,QEasingCurve
 from PyQt5.QtGui import QPixmap,QIcon,QDesktopServices
 from PyQt5.QtCore import Qt,QPoint,QRect,QUrl
 from CustomFunction import apply_stylesheet
-from globalData.stateStore import store
+from globalParams.stateStore import store
 from graph_between_variables import MainWindow as Graph
 from show_data_model import MainWindow as DataModel
+from globalParams.dataStore import globalData
 
 GITHUB="https://github.com/Nishant-Karlupia"
 LINKEDIN="https://www.linkedin.com/in/nishant-karlupia-7a474b279/"
@@ -52,6 +53,20 @@ class MainWindow(QMainWindow):
         self.mainLayout.setSpacing(0)
 
         self.sidebar.setLayout(self.itemLayout)
+
+        # ___set_a_status_bar___
+        self.status_bar=QStatusBar()
+        self.status_bar.setSizeGripEnabled(False)# remove the icon symbol at the bottom right corner of the app
+        self.status_label=QLabel()
+        
+        self.status_label.setAlignment(Qt.AlignCenter)
+        self.status_bar.addWidget(self.status_label)
+        self.setStatusBar(self.status_bar)
+        # self.status_bar.setStyleSheet('QStatusBar::item { border: none; }')
+        # self.status_label.setStyleSheet('color: yellow; font-size: 25px;')
+        
+
+
 
         self.doStyling()
         apply_stylesheet(self,"styles/dashboard.qss")
@@ -154,6 +169,8 @@ class MainWindow(QMainWindow):
 
     def doStyling(self):
 
+        self.status_label.setObjectName("status_label")
+
         toggle=QPixmap("icons/align-left.svg")
         toggle = QIcon(toggle)
         self.toggle_sidebar.setIcon(toggle)
@@ -176,15 +193,31 @@ class MainWindow(QMainWindow):
         github=QIcon(github)
         self.github_link_btn.setIcon(github)
         self.github_link_btn.setCursor(Qt.PointingHandCursor)
+        self.github_link_btn.enterEvent=lambda event:self.set_status_message("see project on github")
+        self.github_link_btn.leaveEvent=lambda event:self.clear_status_message()
+
 
         linkedin=QPixmap("icons/linkedin.svg")
         linkedin=QIcon(linkedin)
         self.linkedin_link_btn.setIcon(linkedin)
         self.linkedin_link_btn.setCursor(Qt.PointingHandCursor)
+        self.linkedin_link_btn.enterEvent=lambda event:self.set_status_message("connect author in linkedin")
+        self.linkedin_link_btn.leaveEvent=lambda event:self.clear_status_message()
+
 
         self.visualize_data_btn.setCursor(Qt.PointingHandCursor)
+        self.visualize_data_btn.enterEvent=lambda event:self.set_status_message("visualize the data")
+        self.visualize_data_btn.leaveEvent=lambda event:self.clear_status_message()
+
         self.view_data_btn.setCursor(Qt.PointingHandCursor)
+        self.view_data_btn.enterEvent=lambda event:self.set_status_message("see the data")
+        self.view_data_btn.leaveEvent=lambda event:self.clear_status_message()
+
+
         self.another_btn.setCursor(Qt.PointingHandCursor)
+        self.another_btn.enterEvent=lambda event:self.set_status_message("yet to code")
+        self.another_btn.leaveEvent=lambda event:self.clear_status_message()
+
 
         # visualized_icon=QPixmap("icons/data_visualization_icon.jpg")
         visualized_icon=QPixmap("icons/data_visualization_icon_1.png")
@@ -195,6 +228,12 @@ class MainWindow(QMainWindow):
         self.layout_on_body_frame.addWidget(visualized_btn)
 
         # print(self.body_frame.geometry())
+
+    def set_status_message(self,msg):
+        self.status_label.setText(msg)
+
+    def clear_status_message(self):
+        self.status_label.clear()
 
 
     # override the mouseEvents to make movement of the screen possible

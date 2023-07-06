@@ -78,4 +78,19 @@ QPushButton#visualized_btn
     icon-size: 800px;
 }
 
-
+QStatusBar
+{
+    background-color: rgb(10, 15, 15);
+}
+QStatusBar::item
+{
+    border: none;
+}
+QLabel#status_label
+{
+    color: yellow;
+    font-size: 20px;
+    font-family: consolas;
+    margin-left: 185px;
+    margin-top: 2px;
+}

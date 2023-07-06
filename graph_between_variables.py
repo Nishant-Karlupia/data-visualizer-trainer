@@ -7,7 +7,8 @@ from PyQt5.QtChart import QChart,QValueAxis,QLineSeries,QScatterSeries
 from CustomFunction import Open_Datafile,apply_stylesheet
 from CustomWidgets import ChartView,FirstButton,CustomMessageBox
 from PyQt5.QtGui import QPainter,QFont
-from globalData.stateStore import store
+from globalParams.stateStore import store
+from globalParams.dataStore import globalData
 
 
 class MainWindow(QMainWindow):
@@ -16,7 +17,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Graph between variables")
         self.setMinimumSize(1000,600)
 
-        self.dataFrame=None
+        self.dataFrame=globalData.give_data()
         self.first_time_change=True
         self.msg_box=None
 
@@ -97,6 +98,8 @@ class MainWindow(QMainWindow):
         
         apply_stylesheet(self,'styles/graph.qss')
 
+        self.assign_combobox_values()
+
     
     def open_file_function(self):
 
@@ -115,7 +118,13 @@ class MainWindow(QMainWindow):
         
 
         self.dataFrame=res[1]
+        globalData.assign_data(self.dataFrame)
+        self.assign_combobox_values()
 
+
+    def assign_combobox_values(self):
+        if self.dataFrame is None:
+            return
         self.combo_first.blockSignals(True)
         self.combo_first.clear()
         self.combo_first.blockSignals(False)
@@ -146,6 +155,7 @@ class MainWindow(QMainWindow):
 
         for x,y in zip(self.dataFrame[x_dim],self.dataFrame[y_dim]):
             if (type(x)!=int and type(x)!=float) or (type(y)!=int and type(y)!=float):
+                self.chart.removeAllSeries()
                 # print(x,y,type(x),type(y))
                 return
             self.x_min=min(self.x_min,x)
@@ -336,8 +346,6 @@ class MainWindow(QMainWindow):
     
     def closeEvent(self,event):
         store.close()
-
-
 
 
 
