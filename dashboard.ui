@@ -164,7 +164,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="another_btn">
+      <widget class="QPushButton" name="train_model_btn">
        <property name="font">
         <font>
          <family>Consolas</family>
@@ -172,7 +172,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Another</string>
+        <string>Train Model</string>
        </property>
       </widget>
      </item>

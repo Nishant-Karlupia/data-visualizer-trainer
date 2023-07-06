@@ -40,7 +40,7 @@ QPushButton#close_btn {
     border-radius: 17px;
 }
 
-QLabel#train,QLabel#target
+QLabel#train,QLabel#target,QLabel#nrdatalabel
 {
     font-size: 20px;
     font-family: consolas;

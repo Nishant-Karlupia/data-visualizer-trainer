@@ -8,6 +8,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score
 from globalParams.stateStore import store
+from globalParams.dataStore import globalData
 
 
 class Worker(QThread):
@@ -22,23 +23,25 @@ class Worker(QThread):
         self.y_test=y_test
 
     def run(self):
-        reg=LinearRegression()
-        reg.fit(self.x_train,self.y_train)
-        y_pred=reg.predict(self.x_test)
-        mse=mean_squared_error(self.y_test,y_pred)
-        mae=mean_absolute_error(self.y_test,y_pred)
-        cod=r2_score(self.y_test,y_pred)
-        score=reg.score(self.x_test,self.y_test)
+        try:
+            reg=LinearRegression()
+            reg.fit(self.x_train,self.y_train)
+            y_pred=reg.predict(self.x_test)
+            mse=mean_squared_error(self.y_test,y_pred)
+            mae=mean_absolute_error(self.y_test,y_pred)
+            cod=r2_score(self.y_test,y_pred)
+            score=reg.score(self.x_test,self.y_test)
 
-        matrix={
-            "Score":round(score,3),
-            "Coefficient of determination":round(cod,3),
-            "Mean Absolute Error":round(mae,3),
-            "Mean Squared Error":round(mse,3)
-        }
+            matrix={
+                "Score":round(score,3),
+                "Coefficient of determination":round(cod,3),
+                "Mean Absolute Error":round(mae,3),
+                "Mean Squared Error":round(mse,3)
+            }
 
-        self.matrix.emit(matrix)
-        # self.matrix.emit(0)
+            self.matrix.emit(matrix)
+        except:
+            self.matrix.emit({})
 
 
 
@@ -50,6 +53,7 @@ class SplitWindow(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setMinimumSize(750,380)
 
+        
         self.list1=CustomListWidget()
         self.list1.addItems(columns)
         self.list1.currentItemChanged.connect(self.data_change_occur)
@@ -60,6 +64,12 @@ class SplitWindow(QMainWindow):
         self.list2.currentItemChanged.connect(self.data_change_occur)
         target_label=QLabel("Target Variables")
         target_label.setObjectName("target")
+
+        self.notRequired=CustomListWidget()
+        self.notRequired.currentItemChanged.connect(self.data_change_occur)
+        nrdatalabel=QLabel("Not Required")
+        nrdatalabel.setObjectName("nrdatalabel")
+
 
         
 
@@ -76,6 +86,8 @@ class SplitWindow(QMainWindow):
         item_layout.addWidget(self.list1,1,0)
         item_layout.addWidget(target_label,0,1)
         item_layout.addWidget(self.list2,1,1)
+        item_layout.addWidget(nrdatalabel,0,2)
+        item_layout.addWidget(self.notRequired,1,2)
 
         btn_layout=QHBoxLayout()
         btn_layout.addWidget(self.confirm_btn)
@@ -111,6 +123,7 @@ class MainWindow(QMainWindow):
 
         self.df,self.data_split,self.x_col,self.y_col=None,None,[],[]
         self.msg_box=None
+        self.df=globalData.give_data()
 
         self.setWindowTitle("Model Trainig")
         self.setMinimumSize(500,500)
@@ -127,15 +140,23 @@ class MainWindow(QMainWindow):
 
         frame=QFrame()
         self.train_btn=FirstButton("Train","train_btn",self.train_model_function)
+        self.split_btn=FirstButton("Select Train Test","select_train_test_btn",self.open_data_split_window)
         # self.train_btn.setDisabled(True)
         self.train_report=QTextEdit()
         self.train_report.setReadOnly(True)
-        self.train_report.setText("No data available")
+        if self.df is None:
+            self.train_report.setText("No data available")
+            self.split_btn.setDisabled(True)
+        else:
+            self.train_report.setText("select train and target variables")
         self.train_report.setObjectName("train_report")
         frame_layout=QVBoxLayout()
         frame_layout.addWidget(self.train_report)
-        frame_layout.addWidget(self.train_btn)
-        frame_layout.setAlignment(self.train_btn, Qt.AlignHCenter)
+        btn_layout=QHBoxLayout()
+        btn_layout.addWidget(self.split_btn)
+        btn_layout.addWidget(self.train_btn)
+        frame_layout.addLayout(btn_layout)
+        # frame_layout.setAlignment(self.train_btn, Qt.AlignHCenter)
         frame.setLayout(frame_layout)
 
         hbox=QHBoxLayout()
@@ -154,9 +175,9 @@ class MainWindow(QMainWindow):
 
 
     def open_file(self):
-        if(len(self.x_col)!=0 and len(self.y_col)!=0):
-            print(self.x_col)
-            print(self.y_col)
+        # if(len(self.x_col)!=0 and len(self.y_col)!=0):
+        #     print(self.x_col)
+        #     print(self.y_col)
 
         res=Open_Datafile(self,self.sep)
 
@@ -171,8 +192,15 @@ class MainWindow(QMainWindow):
             return
                 
         self.df=res[1]
+        globalData.assign_data(self.df)
             
         self.x_col,self.y_col=[],[]
+
+        # self.open_data_split_window()
+        self.split_btn.setDisabled(False)
+        self.train_report.setText("Select train and target variables")
+
+    def open_data_split_window(self):
         
         self.data_split=SplitWindow(list(self.df.columns),self.x_col,self.y_col)
         store.add(self.data_split)
@@ -182,6 +210,9 @@ class MainWindow(QMainWindow):
     def train_model_function(self):
         # print("hello world")
         if len(self.x_col)==0 or len(self.y_col)==0:
+            self.insufficient_data_error_msg=CustomMessageBox("InSufficient Data","Either train or target variable missing")
+            store.add(self.insufficient_data_error_msg)
+            self.insufficient_data_error_msg.show()
             return
         
         X,y=self.df[list(self.x_col)],self.df[list(self.y_col)]
@@ -196,6 +227,11 @@ class MainWindow(QMainWindow):
         pass
 
     def print_report(self,matrix):
+        if len(matrix)==0:
+            self.trainig_error=CustomMessageBox("Error","Not able to train, check the data fields again!!!")
+            store.add(self.trainig_error)
+            self.trainig_error.show()
+            return
         report=""
         for key,val in matrix.items():
             report+=str(key)+" : "+str(val)+"\n"

@@ -8,6 +8,7 @@ from CustomFunction import apply_stylesheet
 from globalParams.stateStore import store
 from graph_between_variables import MainWindow as Graph
 from show_data_model import MainWindow as DataModel
+from train_models import MainWindow as TrainModel
 from globalParams.dataStore import globalData
 
 GITHUB="https://github.com/Nishant-Karlupia"
@@ -41,11 +42,12 @@ class MainWindow(QMainWindow):
         self.body_frame.setLayout(self.layout_on_body_frame)
 
         self.toggle_sidebar.clicked.connect(self.toggle_window)# button to toggle the width of the sidebar
-        self.visualize_data_btn.clicked.connect(self.visualize_data_function)
         self.minimize_btn.clicked.connect(self.show_minimized)
         self.maximize_btn.clicked.connect(self.show_maximized)
         self.close_btn.clicked.connect(self.close)
         self.view_data_btn.clicked.connect(self.show_data_model_function)
+        self.visualize_data_btn.clicked.connect(self.visualize_data_function)
+        self.train_model_btn.clicked.connect(self.train_model_function)
         self.github_link_btn.clicked.connect(lambda: self.open_url(GITHUB))
         self.linkedin_link_btn.clicked.connect(lambda: self.open_url(LINKEDIN))
 
@@ -90,6 +92,12 @@ class MainWindow(QMainWindow):
         self.clear_layout(self.layout_on_body_frame)
         data_model_widget=DataModel()
         self.layout_on_body_frame.addWidget(data_model_widget)
+
+    def train_model_function(self):
+        self.toggle_window()
+        self.clear_layout(self.layout_on_body_frame)
+        train_model_widget=TrainModel()
+        self.layout_on_body_frame.addWidget(train_model_widget)
 
 
     # clear layout of main-body-frame so components can be added or removed dynamically
@@ -201,7 +209,7 @@ class MainWindow(QMainWindow):
         linkedin=QIcon(linkedin)
         self.linkedin_link_btn.setIcon(linkedin)
         self.linkedin_link_btn.setCursor(Qt.PointingHandCursor)
-        self.linkedin_link_btn.enterEvent=lambda event:self.set_status_message("connect author in linkedin")
+        self.linkedin_link_btn.enterEvent=lambda event:self.set_status_message("connect author on linkedin")
         self.linkedin_link_btn.leaveEvent=lambda event:self.clear_status_message()
 
 
@@ -214,9 +222,9 @@ class MainWindow(QMainWindow):
         self.view_data_btn.leaveEvent=lambda event:self.clear_status_message()
 
 
-        self.another_btn.setCursor(Qt.PointingHandCursor)
-        self.another_btn.enterEvent=lambda event:self.set_status_message("yet to code")
-        self.another_btn.leaveEvent=lambda event:self.clear_status_message()
+        self.train_model_btn.setCursor(Qt.PointingHandCursor)
+        self.train_model_btn.enterEvent=lambda event:self.set_status_message("train your model")
+        self.train_model_btn.leaveEvent=lambda event:self.clear_status_message()
 
 
         # visualized_icon=QPixmap("icons/data_visualization_icon.jpg")

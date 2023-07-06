@@ -61,7 +61,7 @@ QPushButton#github_link_btn,QPushButton#linkedin_link_btn
     padding-bottom: 7px;
 }
 
-QPushButton#view_data_btn,QPushButton#visualize_data_btn,QPushButton#another_btn
+QPushButton#view_data_btn,QPushButton#visualize_data_btn,QPushButton#train_model_btn
 {
     background-color: black;
     border: 2px solid rgb(37, 35, 68);
@@ -82,6 +82,7 @@ QStatusBar
 {
     background-color: rgb(10, 15, 15);
 }
+
 QStatusBar::item
 {
     border: none;

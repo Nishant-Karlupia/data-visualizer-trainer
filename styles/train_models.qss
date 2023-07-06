@@ -32,18 +32,23 @@ QTextEdit#train_report
     font-size: 25px;
 }
 
-QPushButton#train_btn
+QPushButton#train_btn,QPushButton#select_train_test_btn
 {
     background-color: #532a7a;
     color: yellow;
     margin: 5px auto;
+    /* margin-bottom: -20px; */
     font-family: consolas;
     padding: 5px 15px;
     text-align: center;
     text-decoration: none;
     border-radius: 16px;
-    min-width: 120px;
+    min-width: 200px;
+    max-width: 240px;
     font-size: 22px;
     font-family: consolas;
+}
+QPushButton#select_train_test_btn:disabled {
+  background-color: gray;
 }
 
