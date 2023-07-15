@@ -97,7 +97,7 @@ class MainWindow(QMainWindow):
         self.toggle_window()
         self.clear_layout(self.layout_on_body_frame)
         train_model_widget=TrainModel()
-        self.layout_on_body_frame.addWidgetcls(train_model_widget)
+        self.layout_on_body_frame.addWidget(train_model_widget)
 
 
     # clear layout of main-body-frame so components can be added or removed dynamically

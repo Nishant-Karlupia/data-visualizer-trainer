@@ -1,36 +1,73 @@
 import sys
 import typing
 from PyQt5.QtCore import QObject, Qt,QThread,pyqtSignal
-from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QLineEdit,QHBoxLayout,QMessageBox,QLabel,QGridLayout,QFrame,QTextEdit
+from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QLineEdit,QHBoxLayout,QMessageBox,QLabel,QGridLayout,QFrame,QTextEdit,QCheckBox,QComboBox
 from CustomWidgets import CustomListWidget,FirstButton,CustomMessageBox
 from CustomFunction import apply_stylesheet,Open_Datafile
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score
+from sklearn.preprocessing import StandardScaler,OneHotEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
 from globalParams.stateStore import store
 from globalParams.dataStore import globalData
+
 
 
 class Worker(QThread):
 
     matrix=pyqtSignal(dict)
 
-    def __init__(self,x_train,y_train,x_test,y_test):
+    def __init__(self,x_train,y_train,x_test,y_test,imputer_columns,scaling_columns,ohe_columns):
         super().__init__()
         self.x_train=x_train
         self.y_train=y_train
         self.x_test=x_test
         self.y_test=y_test
+        self.imputer_columns=imputer_columns
+        self.scaling_columns=scaling_columns
+        self.ohe_columns=ohe_columns
 
     def run(self):
-        try:
-            reg=LinearRegression()
-            reg.fit(self.x_train,self.y_train)
-            y_pred=reg.predict(self.x_test)
+            # print(self.imputer_columns)
+        # try:
+
+            # ************imputers**********
+            trf_imputer=ColumnTransformer(self.imputer_columns,remainder='passthrough')
+
+            # ************scaling***********
+            trf_scale=ColumnTransformer([
+                ('scale',StandardScaler(),self.scaling_columns)
+            ],remainder='passthrough')
+            # ******************************
+
+            # *****************ohe******************
+            trf_ohe=ColumnTransformer([
+                ('ohe',OneHotEncoder(handle_unknown='ignore'),self.ohe_columns)
+            ],remainder='passthrough')
+            # **************************************
+
+            # *****************regressor******************
+            trf_reg=LinearRegression()
+            # ********************************************
+
+            # ***********pipeline*************
+            pipe=Pipeline([
+                ("trf_imputer",trf_imputer),
+                ("trf_scale",trf_scale),
+                ("trf_ohe",trf_ohe),
+                ("trf_reg",trf_reg)
+            ])
+            # ********************************
+            pipe.fit(self.x_train,self.y_train)
+            
+            y_pred=pipe.predict(self.x_test)
             mse=mean_squared_error(self.y_test,y_pred)
             mae=mean_absolute_error(self.y_test,y_pred)
             cod=r2_score(self.y_test,y_pred)
-            score=reg.score(self.x_test,self.y_test)
+            score=pipe.score(self.x_test,self.y_test)
 
             matrix={
                 "Score":round(score,3),
@@ -40,9 +77,8 @@ class Worker(QThread):
             }
 
             self.matrix.emit(matrix)
-        except:
-            self.matrix.emit({})
-
+        # except:
+        #     self.matrix.emit({})
 
 
 
@@ -116,12 +152,132 @@ class SplitWindow(QMainWindow):
     def data_change_occur(self):
         self.confirm_btn.setEnabled(True)
 
+"""
+# imputation transformer
+trf1=ColumnTransformer([
+    ('impute_age',SimpleImputer(),[2]),
+    ('imputer_embarker',SimpleImputer(strategy='most_frequent'),[6])
+],remainder='passthrough')
+"""
+
+
+
+
+class ProcessingWindow(QMainWindow):
+    def __init__(self,dataFrame,imputer_columns,scale_columns,ohe_columns):
+        super().__init__()
+
+        self.df=dataFrame
+        self.scale_boxes=[]
+        self.ohe_boxes=[]
+        self.imputer_boxes=[]
+
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setMinimumSize(750,380)
+
+        self.close_btn=FirstButton("Close","close",self.close)
+        self.ok_btn=FirstButton("ok","ok",lambda:self.addColumnIndex(imputer_columns,scale_columns,ohe_columns))
+        self.btnlayout=QHBoxLayout()
+        self.btnlayout.addWidget(self.ok_btn)
+        self.btnlayout.addWidget(self.close_btn)
+
+        
+        self.final_layout=QVBoxLayout()
+        self.pipeline_layout=QHBoxLayout()
+
+        widget=QWidget()
+        # scaling
+        scale_layout=QVBoxLayout()
+        scale_layout.addWidget(QLabel("Scaling"))
+
+        for item in dataFrame.columns:
+            chb=QCheckBox(item)
+            self.scale_boxes.append(chb)
+            scale_layout.addWidget(chb)
+
+        # ohe hot encoding
+        ohe_layout=QVBoxLayout()
+        ohe_layout.addWidget(QLabel("OH Encoding"))
+
+        for item in dataFrame.columns:
+            chb=QCheckBox(item)
+            self.ohe_boxes.append(chb)
+            ohe_layout.addWidget(chb)
+
+        # imputators
+        impute_layout=QVBoxLayout()
+        impute_layout.addWidget(QLabel("Imputators"))
+
+        combotext=["NA","mean","median","most_frequent"]
+        for item in dataFrame.columns:
+            combo=QComboBox()
+            for txt in combotext:
+                # combo.addItem(str(item)+" : ( strategy -> {} ) ".format(txt))
+                combo.addItem(str(item)+"::{}".format(txt))
+
+            self.imputer_boxes.append(combo)
+
+            impute_layout.addWidget(combo)
+        
+        
+
+
+        self.pipeline_layout.addLayout(scale_layout)
+        self.pipeline_layout.addLayout(ohe_layout)
+        self.pipeline_layout.addLayout(impute_layout)
+        
+        
+        self.final_layout.addLayout(self.pipeline_layout)
+        self.final_layout.addLayout(self.btnlayout)
+
+        widget.setLayout(self.final_layout)
+
+        self.setCentralWidget(widget)
+    
+    def addColumnIndex(self,imputer_columns,scale_columns,ohe_columns):
+        for box in self.scale_boxes:
+            if box.isChecked():
+                scale_columns.append(self.df.columns.get_loc(box.text()))
+                # print(self.df.columns.get_loc(box.text()),box.text())
+        # print(columns)
+
+        for box in self.ohe_boxes:
+            if box.isChecked():
+                ohe_columns.append(self.df.columns.get_loc(box.text()))
+                
+
+        for box in self.imputer_boxes:
+            txt=box.currentText()
+            lst=txt.split("::")
+            if lst[1]=='NA':
+                continue
+            
+            imputer=(str(lst[0]),SimpleImputer(strategy=lst[1]),[self.df.columns.get_loc(lst[0])])
+            imputer_columns.append(imputer)
+            # print(imputer)
+
+
+
+    def print_text(self):
+        for box in self.scale_boxes:
+            if box.isChecked():
+                print(self.df.columns.get_loc(box.text()),box.text())
+
+    
+
+        
+
+
        
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.df,self.data_split,self.x_col,self.y_col=None,None,[],[]
+        self.scaling_columns=[]
+        self.ohe_columns=[]
+        self.imputer_columns=[]
+
         self.msg_box=None
         self.df=globalData.give_data()
 
@@ -139,14 +295,16 @@ class MainWindow(QMainWindow):
 
 
         frame=QFrame()
-        self.train_btn=FirstButton("Train","train_btn",self.train_model_function)
         self.split_btn=FirstButton("Select Train Test","select_train_test_btn",self.open_data_split_window)
+        self.process_btn=FirstButton("Process","select_train_test_btn",self.open_data_processing_window)
+        self.train_btn=FirstButton("Train","train_btn",self.train_model_function)
         # self.train_btn.setDisabled(True)
         self.train_report=QTextEdit()
         self.train_report.setReadOnly(True)
         if self.df is None:
             self.train_report.setText("No data available")
             self.split_btn.setDisabled(True)
+            self.process_btn.setDisabled(True)
         else:
             self.train_report.setText("select train and target variables")
         self.train_report.setObjectName("train_report")
@@ -154,6 +312,7 @@ class MainWindow(QMainWindow):
         frame_layout.addWidget(self.train_report)
         btn_layout=QHBoxLayout()
         btn_layout.addWidget(self.split_btn)
+        btn_layout.addWidget(self.process_btn)
         btn_layout.addWidget(self.train_btn)
         frame_layout.addLayout(btn_layout)
         # frame_layout.setAlignment(self.train_btn, Qt.AlignHCenter)
@@ -198,7 +357,19 @@ class MainWindow(QMainWindow):
 
         # self.open_data_split_window()
         self.split_btn.setDisabled(False)
+        self.process_btn.setDisabled(False)
         self.train_report.setText("Select train and target variables")
+
+    def open_data_processing_window(self):
+        # columns=[]
+        self.scaling_columns=[]
+        self.ohe_columns=[]
+        self.imputer_columns=[]
+        
+        self.data_split=ProcessingWindow(self.df,self.imputer_columns,self.scaling_columns,self.ohe_columns)
+        store.add(self.data_split)
+        self.data_split.show()
+
 
     def open_data_split_window(self):
         
@@ -206,7 +377,6 @@ class MainWindow(QMainWindow):
         store.add(self.data_split)
         self.data_split.show()
 
-    
     def train_model_function(self):
         # print("hello world")
         if len(self.x_col)==0 or len(self.y_col)==0:
@@ -220,7 +390,7 @@ class MainWindow(QMainWindow):
         # print(y)
         x_train,x_test,y_train,y_test=train_test_split(X,y,test_size=0.3)
         
-        self.worker=Worker(x_train,y_train,x_test,y_test)
+        self.worker=Worker(x_train,y_train,x_test,y_test,self.imputer_columns,self.scaling_columns,self.ohe_columns)
         self.worker.matrix.connect(self.print_report)
         self.worker.start()
 
@@ -238,6 +408,7 @@ class MainWindow(QMainWindow):
             # print(key,val)
         # print(matrix)
         self.train_report.setText(report)
+
 
 
     # close all second-window opened
