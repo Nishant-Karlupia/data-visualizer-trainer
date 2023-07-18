@@ -1,248 +1,270 @@
 import sys
 import typing
-from PyQt5.QtCore import QObject, Qt,QThread,pyqtSignal
-from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QLineEdit,QHBoxLayout,QMessageBox,QLabel,QGridLayout,QFrame,QTextEdit
-from CustomWidgets import CustomListWidget,FirstButton,CustomMessageBox
-from CustomFunction import apply_stylesheet,Open_Datafile
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QTableView,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect,QMessageBox,QGridLayout,QLabel
+from PyQt5.QtGui import QStandardItem,QStandardItemModel
+from CustomFunction import Open_Datafile,apply_stylesheet
+from CustomWidgets import FirstButton,CustomMessageBox
 from globalParams.stateStore import store
 from globalParams.dataStore import globalData
+import matplotlib.pyplot as plt
 
-
-class Worker(QThread):
-
-    matrix=pyqtSignal(dict)
-
-    def __init__(self,x_train,y_train,x_test,y_test):
-        super().__init__()
-        self.x_train=x_train
-        self.y_train=y_train
-        self.x_test=x_test
-        self.y_test=y_test
-
-    def run(self):
-        try:
-            reg=LinearRegression()
-            reg.fit(self.x_train,self.y_train)
-            y_pred=reg.predict(self.x_test)
-            mse=mean_squared_error(self.y_test,y_pred)
-            mae=mean_absolute_error(self.y_test,y_pred)
-            cod=r2_score(self.y_test,y_pred)
-            score=reg.score(self.x_test,self.y_test)
-
-            matrix={
-                "Score":round(score,3),
-                "Coefficient of determination":round(cod,3),
-                "Mean Absolute Error":round(mae,3),
-                "Mean Squared Error":round(mse,3)
-            }
-
-            self.matrix.emit(matrix)
-        except:
-            self.matrix.emit({})
-
-
-
-
-class SplitWindow(QMainWindow):
-    def __init__(self,columns,x_col,y_col):
-        super().__init__()
-
-        self.setWindowFlags(Qt.FramelessWindowHint)
-        self.setMinimumSize(750,380)
-
-        
-        self.list1=CustomListWidget()
-        self.list1.addItems(columns)
-        self.list1.currentItemChanged.connect(self.data_change_occur)
-        train_label=QLabel("Train Variables")
-        train_label.setObjectName("train")
-
-        self.list2=CustomListWidget()
-        self.list2.currentItemChanged.connect(self.data_change_occur)
-        target_label=QLabel("Target Variables")
-        target_label.setObjectName("target")
-
-        self.notRequired=CustomListWidget()
-        self.notRequired.currentItemChanged.connect(self.data_change_occur)
-        nrdatalabel=QLabel("Not Required")
-        nrdatalabel.setObjectName("nrdatalabel")
-
-
-        
-
-        self.confirm_btn=FirstButton("OK","confirm_btn",lambda: self.work_done(x_col,y_col))
-        self.close_btn=FirstButton("Close","close_btn",self.close)
-        
+class StatisticsWindow(QMainWindow):
+    def __init__(self, parent):
+        super().__init__(parent)
 
         widget=QWidget()
         layout=QVBoxLayout()
 
-        item_layout=QGridLayout()
+        # print(parent.dataFrame)
+        df=parent.dataFrame
+        
+        
+        # print(self.dataFrame.describe())
+        # print("Data Shape:")
+        # print(df.shape)
+        # print()
 
-        item_layout.addWidget(train_label,0,0)
-        item_layout.addWidget(self.list1,1,0)
-        item_layout.addWidget(target_label,0,1)
-        item_layout.addWidget(self.list2,1,1)
-        item_layout.addWidget(nrdatalabel,0,2)
-        item_layout.addWidget(self.notRequired,1,2)
+        layout_dtype=QVBoxLayout()
+        dtype_data_layout=QGridLayout()
 
-        btn_layout=QHBoxLayout()
-        btn_layout.addWidget(self.confirm_btn)
-        btn_layout.addWidget(self.close_btn)
+        # Data Types
+        data_types = df.dtypes.to_dict()
+        data_lst=[]
+        # print("Data Types:")
+        for column, dtype in data_types.items():
+            # print(f"{column}: {dtype}")
+            data_lst.append([column,dtype])
+        for i in range(len(data_lst)):
+            dtype_data_layout.addWidget(QLabel(str(data_lst[i][0])),0,i)
+            dtype_data_layout.addWidget(QLabel(str(data_lst[i][1])),1,i)
 
-        layout.addLayout(item_layout)
-        layout.addLayout(btn_layout)
+        dtype_label=QLabel("Data types")
+        dtype_label.setObjectName("heading")
+        dtype_label.setAlignment(Qt.AlignCenter)
+        layout_dtype.addWidget(dtype_label)
+        layout_dtype.addLayout(dtype_data_layout)
 
+
+
+
+        # # Unique Values
+        # print("Unique Values:")
+        # print(type(df.nunique()))
+        # print(df.nunique().to_dict())
+        # print()
+        layout_unique=QVBoxLayout()
+        unique_val_layout=QGridLayout()
+        unique_data = df.nunique().to_dict()
+        data_lst=[]
+        # print("Data Types:")
+        for column, data in unique_data.items():
+            data_lst.append([column,data])
+        for i in range(len(data_lst)):
+            unique_val_layout.addWidget(QLabel(str(data_lst[i][0])),0,i)
+            unique_val_layout.addWidget(QLabel(str(data_lst[i][1])),1,i)
+
+        nunique_label=QLabel("Unique Values")
+        nunique_label.setObjectName("heading")
+        nunique_label.setAlignment(Qt.AlignCenter)
+        layout_unique.addWidget(nunique_label)
+        layout_unique.addLayout(unique_val_layout)
+
+
+        # # Missing Values
+        # print("Missing Values:")
+        # print(df.isnull().sum())
+        # print()
+
+        layout_missing=QVBoxLayout()
+        missing_val_layout=QGridLayout()
+        missing_data = df.isnull().sum().to_dict()
+        data_lst=[]
+        for column, data in missing_data.items():
+            data_lst.append([column,data])
+        for i in range(len(data_lst)):
+            missing_val_layout.addWidget(QLabel(str(data_lst[i][0])),0,i)
+            missing_val_layout.addWidget(QLabel(str(data_lst[i][1])),1,i)
+
+        missing_label=QLabel("Missing Values")
+        missing_label.setObjectName("heading")
+        missing_label.setAlignment(Qt.AlignCenter)
+
+        layout_missing.addWidget(missing_label)
+        layout_missing.addLayout(missing_val_layout)
+
+
+
+
+        # # Summary Statistics
+        # print("Summary Statistics:")
+        # print(df.describe().to_dict())
+        # print()
+
+        layout_summary=QVBoxLayout()
+        summary_data_layout=QGridLayout()
+        metrices=['count','mean','std','min','max','25%','50%','75%']
+        summary_data=df.describe().to_dict()
+        for i in range(len(metrices)):
+            summary_data_layout.addWidget(QLabel(metrices[i]),i+1,0)
+        col=1
+        for column,data in summary_data.items():
+            summary_data_layout.addWidget(QLabel(str(column)),0,col)
+            for i in range(len(metrices)):
+                summary_data_layout.addWidget(QLabel(str(round(data[metrices[i]],2))),i+1,col)
+            col+=1
+
+        summary_label=QLabel("Summary")
+        summary_label.setObjectName("heading")
+        summary_label.setAlignment(Qt.AlignCenter)
+        layout_summary.addWidget(summary_label)
+        layout_summary.addLayout(summary_data_layout)
+
+        # correlation
+        numeric_columns = df.select_dtypes(include='number').columns
+        correlation_df = df[numeric_columns]
+
+        # Compute correlation
+        correlation_matrix = correlation_df.corr().to_dict()
+        corr_keys=list(correlation_matrix.keys())
+        # print("Correlation:")
+        # print(correlation_matrix)
+        # print(corr_keys)
+        # print()
+        layout_corr=QVBoxLayout()
+        corr_data_layout=QGridLayout()
+        
+        for i in range(len(corr_keys)):
+            corr_data_layout.addWidget(QLabel(corr_keys[i]),i+1,0)
+            corr_data_layout.addWidget(QLabel(corr_keys[i]),0,i+1)
+
+        for row in range(len(corr_keys)):
+            for col in range(len(corr_keys)):
+                corr_data_layout.addWidget(QLabel(str(round(correlation_matrix[corr_keys[row]][corr_keys[col]],3))),row+1,col+1)
+
+        corr_label=QLabel("Correlation Summary")
+        corr_label.setObjectName("heading")
+        corr_label.setAlignment(Qt.AlignCenter)
+        layout_corr.addWidget(corr_label)
+        layout_corr.addLayout(corr_data_layout)
+
+
+        layout.addLayout(layout_dtype)
+        layout.addLayout(layout_unique)
+        layout.addLayout(layout_missing)
+        layout.addLayout(layout_summary)
+        layout.addLayout(layout_corr)
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-        apply_stylesheet(self,'styles/split_data.qss')
+        apply_stylesheet(self,'styles/statistics.qss')
 
-    def work_done(self,x_col,y_col):
-        x_col.clear()
-        y_col.clear()
-        for i in range(self.list1.count()):
-            item=self.list1.item(i)
-            x_col.append(item.text())
-        for i in range(self.list2.count()):
-            item=self.list2.item(i)
-            y_col.append(item.text())
 
-        self.confirm_btn.setEnabled(False)
-
-    def data_change_occur(self):
-        self.confirm_btn.setEnabled(True)
-
-       
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.df,self.data_split,self.x_col,self.y_col=None,None,[],[]
-        self.msg_box=None
-        self.df=globalData.give_data()
+        self.dataFrame=globalData.give_data()
 
-        self.setWindowTitle("Model Trainig")
+        self.setWindowTitle("Show the data")
         self.setMinimumSize(500,500)
+        self.msg_box=None
 
         widget=QWidget()
         self.open_btn=FirstButton("Open File","open_btn",self.open_file)
-        
-        
+                
         self.sep=QLineEdit()
-
         self.sep.setPlaceholderText("Enter the separator (; , ...etc)")
         self.sep.setObjectName("separator")
 
-
-        frame=QFrame()
-        self.train_btn=FirstButton("Train","train_btn",self.train_model_function)
-        self.split_btn=FirstButton("Select Train Test","select_train_test_btn",self.open_data_split_window)
-        # self.train_btn.setDisabled(True)
-        self.train_report=QTextEdit()
-        self.train_report.setReadOnly(True)
-        if self.df is None:
-            self.train_report.setText("No data available")
-            self.split_btn.setDisabled(True)
-        else:
-            self.train_report.setText("select train and target variables")
-        self.train_report.setObjectName("train_report")
-        frame_layout=QVBoxLayout()
-        frame_layout.addWidget(self.train_report)
-        btn_layout=QHBoxLayout()
-        btn_layout.addWidget(self.split_btn)
-        btn_layout.addWidget(self.train_btn)
-        frame_layout.addLayout(btn_layout)
-        # frame_layout.setAlignment(self.train_btn, Qt.AlignHCenter)
-        frame.setLayout(frame_layout)
+        self.model=QStandardItemModel()
+        table=QTableView()
+        table.setModel(self.model)
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        table.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         hbox=QHBoxLayout()
         hbox.addWidget(self.open_btn)
         hbox.addWidget(self.sep)
+
+        statistics_btn=FirstButton("Show Statistics","statistics",self.show_statistics)
         
         layout=QVBoxLayout()
         layout.addLayout(hbox)
-        layout.addWidget(frame)
+        layout.addWidget(table)
+        layout.addWidget(statistics_btn)
         widget.setLayout(layout)
 
 
         self.setCentralWidget(widget)
 
-        apply_stylesheet(self,'styles/train_models.qss')
+        apply_stylesheet(self,'styles/data_model.qss')
+        self.show_model_function()
 
 
     def open_file(self):
-        # if(len(self.x_col)!=0 and len(self.y_col)!=0):
-        #     print(self.x_col)
-        #     print(self.y_col)
 
         res=Open_Datafile(self,self.sep)
 
         if res[0]==None:# no file opened
             return
-        
-        if res[0]==False:# file not an excel or csv file
-            # QMessageBox.critical(self,"Error!!!","Make sure that file is .xlsx or .csv")
+
+        if res[0]==False:# file not an excel or csv
             self.msg_box=CustomMessageBox("Error","Make sure that file is .xlsx or .csv")
             store.add(self.msg_box)
             self.msg_box.show()
             return
-                
-        self.df=res[1]
-        globalData.assign_data(self.df)
-            
-        self.x_col,self.y_col=[],[]
-
-        # self.open_data_split_window()
-        self.split_btn.setDisabled(False)
-        self.train_report.setText("Select train and target variables")
-
-    def open_data_split_window(self):
         
-        self.data_split=SplitWindow(list(self.df.columns),self.x_col,self.y_col)
-        store.add(self.data_split)
-        self.data_split.show()
+        self.dataFrame=res[1]   
 
-    
-    def train_model_function(self):
-        # print("hello world")
-        if len(self.x_col)==0 or len(self.y_col)==0:
-            self.insufficient_data_error_msg=CustomMessageBox("InSufficient Data","Either train or target variable missing")
-            store.add(self.insufficient_data_error_msg)
-            self.insufficient_data_error_msg.show()
+        self.show_model_function()
+
+    def show_model_function(self):
+
+        if self.dataFrame is None:
             return
         
-        X,y=self.df[list(self.x_col)],self.df[list(self.y_col)]
-        # print(X)
-        # print(y)
-        x_train,x_test,y_train,y_test=train_test_split(X,y,test_size=0.3)
         
-        self.worker=Worker(x_train,y_train,x_test,y_test)
-        self.worker.matrix.connect(self.print_report)
-        self.worker.start()
 
-        pass
+        # # Data Distribution (Histograms)
+        # print("Data Distribution:")
+        # for column in df.select_dtypes(include='number').columns:
+        #     df[column].plot(kind='hist')
+        #     plt.title(column)
+        #     plt.show()
 
-    def print_report(self,matrix):
-        if len(matrix)==0:
-            self.trainig_error=CustomMessageBox("Error","Not able to train, check the data fields again!!!")
-            store.add(self.trainig_error)
-            self.trainig_error.show()
-            return
-        report=""
-        for key,val in matrix.items():
-            report+=str(key)+" : "+str(val)+"\n"
-            # print(key,val)
-        # print(matrix)
-        self.train_report.setText(report)
+        # # Categorical Variables (Bar Plots)
+        # print("Categorical Variables:")
+        # for column in df.select_dtypes(include='object').columns:
+        #     df[column].value_counts().plot(kind='bar')
+        #     plt.title(column)
+        #     plt.show()
+
+        # # Data Preview
+        # print("Data Preview (First 5 Rows):")
+        # print(df.head())
+
+        globalData.assign_data(self.dataFrame)
+        columns=list(self.dataFrame.columns)
+        # print(columns)
+        self.model.setColumnCount(len(columns))
+        self.model.setHorizontalHeaderLabels(columns)
+
+        for ind,value in enumerate(self.dataFrame.values):
+            # print(df.value)
+            items=[QStandardItem(str(val)) for val in value]
+            self.model.insertRow(ind,items)
 
 
-    # close all second-window opened
-    def closeEvent(self,event):
+    def show_statistics(self):
+        self.stat_window=StatisticsWindow(self)
+        self.setCentralWidget(self.stat_window)
+        # self.stat_window.show()
+
+    def closeEvent(self, event):
         store.close()
+
     
 
 if __name__=="__main__":

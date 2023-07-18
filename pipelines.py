@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QLineEd
 from CustomWidgets import CustomListWidget,FirstButton,CustomMessageBox
 from CustomFunction import apply_stylesheet,Open_Datafile
 from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score
 from sklearn.preprocessing import StandardScaler,OneHotEncoder
@@ -31,7 +32,12 @@ class Worker(QThread):
         self.ohe_columns=ohe_columns
 
     def run(self):
-            # print(self.imputer_columns)
+            print(self.x_train)
+            print(self.imputer_columns)
+            # print(self.scaling_columns)
+            # print(self.ohe_columns)
+            print(self.x_train.columns[self.scaling_columns])
+            print(self.x_train.columns[self.ohe_columns])
         # try:
 
             # ************imputers**********
@@ -45,37 +51,50 @@ class Worker(QThread):
 
             # *****************ohe******************
             trf_ohe=ColumnTransformer([
-                ('ohe',OneHotEncoder(handle_unknown='ignore'),self.ohe_columns)
+                ('ohe',OneHotEncoder(sparse_output=False,handle_unknown='ignore'),self.ohe_columns)
             ],remainder='passthrough')
             # **************************************
 
             # *****************regressor******************
             trf_reg=LinearRegression()
+            # trf_reg=DecisionTreeClassifier()
             # ********************************************
 
             # ***********pipeline*************
+            # pipe=Pipeline([
+            #     ("trf_imputer",trf_imputer),
+            #     ("trf_scale",trf_scale),
+            #     ("trf_ohe",trf_ohe),
+            #     ("trf_reg",trf_reg)
+            # ])
             pipe=Pipeline([
                 ("trf_imputer",trf_imputer),
                 ("trf_scale",trf_scale),
                 ("trf_ohe",trf_ohe),
                 ("trf_reg",trf_reg)
             ])
+
             # ********************************
-            pipe.fit(self.x_train,self.y_train)
+            # pipe.fit(self.x_train,self.y_train)
+            X_train_transformed = pipe.fit_transform(self.x_train,self.y_train)
+
+            # # Transform the test data using the fitted pipeline
+            X_test_transformed = pipe.transform(self.x_test)
+
             
-            y_pred=pipe.predict(self.x_test)
-            mse=mean_squared_error(self.y_test,y_pred)
-            mae=mean_absolute_error(self.y_test,y_pred)
-            cod=r2_score(self.y_test,y_pred)
-            score=pipe.score(self.x_test,self.y_test)
+            # y_pred=pipe.predict(self.x_test)
+            # mse=mean_squared_error(self.y_test,y_pred)
+            # mae=mean_absolute_error(self.y_test,y_pred)
+            # cod=r2_score(self.y_test,y_pred)
+            # score=pipe.score(self.x_test,self.y_test)
 
-            matrix={
-                "Score":round(score,3),
-                "Coefficient of determination":round(cod,3),
-                "Mean Absolute Error":round(mae,3),
-                "Mean Squared Error":round(mse,3)
-            }
-
+            # matrix={
+            #     "Score":round(score,3),
+            #     "Coefficient of determination":round(cod,3),
+            #     "Mean Absolute Error":round(mae,3),
+            #     "Mean Squared Error":round(mse,3)
+            # }
+            matrix={"A":1}
             self.matrix.emit(matrix)
         # except:
         #     self.matrix.emit({})
@@ -168,6 +187,7 @@ class ProcessingWindow(QMainWindow):
         super().__init__()
 
         self.df=dataFrame
+        # print(self.df)
         self.scale_boxes=[]
         self.ohe_boxes=[]
         self.imputer_boxes=[]
@@ -366,7 +386,7 @@ class MainWindow(QMainWindow):
         self.ohe_columns=[]
         self.imputer_columns=[]
         
-        self.data_split=ProcessingWindow(self.df,self.imputer_columns,self.scaling_columns,self.ohe_columns)
+        self.data_split=ProcessingWindow(self.df[list(self.x_col)],self.imputer_columns,self.scaling_columns,self.ohe_columns)
         store.add(self.data_split)
         self.data_split.show()
 
@@ -421,3 +441,56 @@ if __name__=="__main__":
     window=MainWindow()
     window.show()
     sys.exit(app.exec_())
+
+
+"""
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score
+from sklearn.preprocessing import StandardScaler,OneHotEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.tree import DecisionTreeClassifier
+import pandas as pd
+
+df=pd.read_csv("sample_data/sample.csv")
+
+
+X_train,X_test,y_train,y_test=train_test_split(df.drop(columns=['Survived','Age']),df['Survived'],test_size=0.2,random_state=42)
+trf1=ColumnTransformer([
+    ('impute_age',SimpleImputer(),[2]),
+    ('imputer_embarker',SimpleImputer(strategy='most_frequent'),[6])
+],remainder='passthrough')
+
+# one hot encoding
+trf2=ColumnTransformer([
+    ('ohe_gender',OneHotEncoder(sparse_output=False,handle_unknown='ignore'),[1,6])
+],remainder='passthrough')
+
+trf3=ColumnTransformer([
+    ('scale',StandardScaler(),slice(0,10))
+])
+trf4=DecisionTreeClassifier()
+
+preprocessor = ColumnTransformer([
+    ('categorical', Pipeline([
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('encoder', OneHotEncoder(sparse_output=False, handle_unknown='ignore'))
+    ]), ['Sex']),
+    ('categorical1', Pipeline([
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('encoder', OneHotEncoder(sparse_output=False, handle_unknown='ignore'))
+    ]), ['Embarked'])
+], remainder='passthrough')
+
+# Final pipeline
+pipe = Pipeline([
+    ('preprocessor', preprocessor),
+    ('classifier', DecisionTreeClassifier())
+])
+pipe.fit(X_train,y_train)
+
+
+
+"""
