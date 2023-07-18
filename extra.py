@@ -2,7 +2,7 @@ import sys
 import typing
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QTableView,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect,QMessageBox,QGridLayout,QLabel
+from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QTableView,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect,QMessageBox,QGridLayout,QLabel,QScrollArea
 from PyQt5.QtGui import QStandardItem,QStandardItemModel
 from CustomFunction import Open_Datafile,apply_stylesheet
 from CustomWidgets import FirstButton,CustomMessageBox
@@ -11,14 +11,17 @@ from globalParams.dataStore import globalData
 import matplotlib.pyplot as plt
 
 class StatisticsWindow(QMainWindow):
-    def __init__(self, parent):
-        super().__init__(parent)
+    # def __init__(self, parent):
+    #     super().__init__(parent)
+
+    def __init__(self, df):
+        super().__init__()
 
         widget=QWidget()
         layout=QVBoxLayout()
 
         # print(parent.dataFrame)
-        df=parent.dataFrame
+        # df=df
         
         
         # print(self.dataFrame.describe())
@@ -156,6 +159,7 @@ class StatisticsWindow(QMainWindow):
         layout.addLayout(layout_summary)
         layout.addLayout(layout_corr)
         widget.setLayout(layout)
+
         self.setCentralWidget(widget)
 
         apply_stylesheet(self,'styles/statistics.qss')
@@ -258,8 +262,13 @@ class MainWindow(QMainWindow):
 
 
     def show_statistics(self):
-        self.stat_window=StatisticsWindow(self)
-        self.setCentralWidget(self.stat_window)
+        # self.stat_window=StatisticsWindow(self)
+        self.stat_window=StatisticsWindow(self.dataFrame)
+        scroll_area=QScrollArea()
+        scroll_area.setWidget(self.stat_window)
+        scroll_area.setWidgetResizable(True)
+        self.setCentralWidget(scroll_area)
+        # self.setCentralWidget(StatisticsWindow(self))
         # self.stat_window.show()
 
     def closeEvent(self, event):
