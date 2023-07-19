@@ -1,4 +1,4 @@
-QPushButton#open_btn {
+QPushButton#open_btn,QPushButton#statistics,QPushButton#show_data{
   background-color: #361a50;
   color: white;
   /* border: none; */
@@ -26,4 +26,7 @@ QLineEdit#separator {
   /* margin-left: 100px; */
 }
 
+QPushButton#statistics:disabled {
+  background-color: gray;
+}
 

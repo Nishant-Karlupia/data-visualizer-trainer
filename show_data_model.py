@@ -2,7 +2,7 @@ import sys
 import typing
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QTableView,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect,QMessageBox,QGridLayout,QLabel,QScrollArea
+from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QTableView,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect,QMessageBox,QGridLayout,QLabel,QScrollArea,QStackedWidget,QSizePolicy
 from PyQt5.QtGui import QStandardItem,QStandardItemModel
 from CustomFunction import Open_Datafile,apply_stylesheet
 from CustomWidgets import FirstButton,CustomMessageBox
@@ -11,11 +11,12 @@ from globalParams.dataStore import globalData
 import matplotlib.pyplot as plt
 
 class StatisticsWindow(QMainWindow):
-    # def __init__(self, parent):
-    #     super().__init__(parent)
+    def __init__(self, parent):
+        super().__init__(parent)
 
-    def __init__(self, df):
-        super().__init__()
+    # def __init__(self, df):
+    #     super().__init__()
+        df=parent.dataFrame
 
         widget=QWidget()
         layout=QVBoxLayout()
@@ -144,7 +145,7 @@ class StatisticsWindow(QMainWindow):
 
         for row in range(len(corr_keys)):
             for col in range(len(corr_keys)):
-                corr_data_layout.addWidget(QLabel(str(round(correlation_matrix[corr_keys[row]][corr_keys[col]],3))),row+1,col+1)
+                corr_data_layout.addWidget(QLabel(str(round(correlation_matrix[corr_keys[row]][corr_keys[col]],5))),row+1,col+1)
 
         corr_label=QLabel("Correlation Summary")
         corr_label.setObjectName("heading")
@@ -158,6 +159,8 @@ class StatisticsWindow(QMainWindow):
         layout.addLayout(layout_missing)
         layout.addLayout(layout_summary)
         layout.addLayout(layout_corr)
+
+
         widget.setLayout(layout)
 
         self.setCentralWidget(widget)
@@ -174,8 +177,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Show the data")
         self.setMinimumSize(500,500)
         self.msg_box=None
+        # self.new_data_frame_calcul
 
-        widget=QWidget()
         self.open_btn=FirstButton("Open File","open_btn",self.open_file)
                 
         self.sep=QLineEdit()
@@ -192,20 +195,32 @@ class MainWindow(QMainWindow):
         hbox.addWidget(self.open_btn)
         hbox.addWidget(self.sep)
 
-        statistics_btn=FirstButton("Show Statistics","statistics",self.show_statistics)
+        self.statistics_btn=FirstButton("Show Statistics","statistics",self.set_statistics_layout)
+        self.statistics_btn.setDisabled(True)
+
         
         layout=QVBoxLayout()
         layout.addLayout(hbox)
         layout.addWidget(table)
-        layout.addWidget(statistics_btn)
-        widget.setLayout(layout)
+        layout.addWidget(self.statistics_btn)
+        self.model_widget=QWidget()
+        self.model_widget.setLayout(layout)
 
+        self.stat_widget=QWidget()
+        self.stat_widget_layout=QVBoxLayout()
+        self.stat_widget.setLayout(self.stat_widget_layout)
 
-        self.setCentralWidget(widget)
+        self.stacked_widget = QStackedWidget()
+        self.stacked_widget.addWidget(self.model_widget)
+        self.stacked_widget.addWidget(self.stat_widget)
+
+        self.stacked_widget.setCurrentWidget(self.model_widget)
 
         apply_stylesheet(self,'styles/data_model.qss')
         self.show_model_function()
 
+
+        self.setCentralWidget(self.stacked_widget)
 
     def open_file(self):
 
@@ -221,6 +236,7 @@ class MainWindow(QMainWindow):
             return
         
         self.dataFrame=res[1]   
+        self.statistics_btn.setDisabled(False)
 
         self.show_model_function()
 
@@ -260,16 +276,42 @@ class MainWindow(QMainWindow):
             items=[QStandardItem(str(val)) for val in value]
             self.model.insertRow(ind,items)
 
+        
+    def set_model_layout(self):
+        self.stacked_widget.setCurrentWidget(self.model_widget)
 
-    def show_statistics(self):
-        # self.stat_window=StatisticsWindow(self)
-        self.stat_window=StatisticsWindow(self.dataFrame)
+
+
+    def clear_layout(self,layout):
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.setParent(None)
+            else:
+                nested_layout = item.layout()
+                if nested_layout:
+                    self.clear_layout(nested_layout)
+            del item
+
+    def set_statistics_layout(self):
+
+        self.clear_layout(self.stat_widget_layout)
+
+        self.stat_window=StatisticsWindow(self)
+
+
         scroll_area=QScrollArea()
         scroll_area.setWidget(self.stat_window)
         scroll_area.setWidgetResizable(True)
-        self.setCentralWidget(scroll_area)
-        # self.setCentralWidget(StatisticsWindow(self))
-        # self.stat_window.show()
+
+
+        self.stat_widget_layout.addWidget(scroll_area)
+        show_model_btn=FirstButton("show data","show_data",self.set_model_layout)
+        self.stat_widget_layout.addWidget(show_model_btn)
+
+
+        self.stacked_widget.setCurrentWidget(self.stat_widget)
 
     def closeEvent(self, event):
         store.close()

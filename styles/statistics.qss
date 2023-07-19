@@ -1,6 +1,6 @@
 QWidget
 {
-    background-color: rgb(182, 178, 178);
+    background-color: rgb(197, 194, 194);
 }
 
 QLabel#heading

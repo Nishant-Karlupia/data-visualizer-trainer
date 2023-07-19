@@ -1,213 +1,109 @@
 import sys
-import typing
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtGui
+import numpy as np
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QTableView,QHeaderView,QLineEdit,QHBoxLayout,QGraphicsDropShadowEffect,QMessageBox,QGridLayout,QLabel,QScrollArea
-from PyQt5.QtGui import QStandardItem,QStandardItemModel
+from PyQt5.QtWidgets import QWidget, QMainWindow,QApplication,QComboBox,QVBoxLayout,QHBoxLayout,QLineEdit,QDockWidget,QCheckBox,QFormLayout,QLabel,QMessageBox
+from PyQt5.QtChart import QChart,QValueAxis,QLineSeries,QScatterSeries
 from CustomFunction import Open_Datafile,apply_stylesheet
-from CustomWidgets import FirstButton,CustomMessageBox
+from CustomWidgets import ChartView,FirstButton,CustomMessageBox
+from PyQt5.QtGui import QPainter,QFont
 from globalParams.stateStore import store
 from globalParams.dataStore import globalData
-import matplotlib.pyplot as plt
-
-class StatisticsWindow(QMainWindow):
-    # def __init__(self, parent):
-    #     super().__init__(parent)
-
-    def __init__(self, df):
-        super().__init__()
-
-        widget=QWidget()
-        layout=QVBoxLayout()
-
-        # print(parent.dataFrame)
-        # df=df
-        
-        
-        # print(self.dataFrame.describe())
-        # print("Data Shape:")
-        # print(df.shape)
-        # print()
-
-        layout_dtype=QVBoxLayout()
-        dtype_data_layout=QGridLayout()
-
-        # Data Types
-        data_types = df.dtypes.to_dict()
-        data_lst=[]
-        # print("Data Types:")
-        for column, dtype in data_types.items():
-            # print(f"{column}: {dtype}")
-            data_lst.append([column,dtype])
-        for i in range(len(data_lst)):
-            dtype_data_layout.addWidget(QLabel(str(data_lst[i][0])),0,i)
-            dtype_data_layout.addWidget(QLabel(str(data_lst[i][1])),1,i)
-
-        dtype_label=QLabel("Data types")
-        dtype_label.setObjectName("heading")
-        dtype_label.setAlignment(Qt.AlignCenter)
-        layout_dtype.addWidget(dtype_label)
-        layout_dtype.addLayout(dtype_data_layout)
-
-
-
-
-        # # Unique Values
-        # print("Unique Values:")
-        # print(type(df.nunique()))
-        # print(df.nunique().to_dict())
-        # print()
-        layout_unique=QVBoxLayout()
-        unique_val_layout=QGridLayout()
-        unique_data = df.nunique().to_dict()
-        data_lst=[]
-        # print("Data Types:")
-        for column, data in unique_data.items():
-            data_lst.append([column,data])
-        for i in range(len(data_lst)):
-            unique_val_layout.addWidget(QLabel(str(data_lst[i][0])),0,i)
-            unique_val_layout.addWidget(QLabel(str(data_lst[i][1])),1,i)
-
-        nunique_label=QLabel("Unique Values")
-        nunique_label.setObjectName("heading")
-        nunique_label.setAlignment(Qt.AlignCenter)
-        layout_unique.addWidget(nunique_label)
-        layout_unique.addLayout(unique_val_layout)
-
-
-        # # Missing Values
-        # print("Missing Values:")
-        # print(df.isnull().sum())
-        # print()
-
-        layout_missing=QVBoxLayout()
-        missing_val_layout=QGridLayout()
-        missing_data = df.isnull().sum().to_dict()
-        data_lst=[]
-        for column, data in missing_data.items():
-            data_lst.append([column,data])
-        for i in range(len(data_lst)):
-            missing_val_layout.addWidget(QLabel(str(data_lst[i][0])),0,i)
-            missing_val_layout.addWidget(QLabel(str(data_lst[i][1])),1,i)
-
-        missing_label=QLabel("Missing Values")
-        missing_label.setObjectName("heading")
-        missing_label.setAlignment(Qt.AlignCenter)
-
-        layout_missing.addWidget(missing_label)
-        layout_missing.addLayout(missing_val_layout)
-
-
-
-
-        # # Summary Statistics
-        # print("Summary Statistics:")
-        # print(df.describe().to_dict())
-        # print()
-
-        layout_summary=QVBoxLayout()
-        summary_data_layout=QGridLayout()
-        metrices=['count','mean','std','min','max','25%','50%','75%']
-        summary_data=df.describe().to_dict()
-        for i in range(len(metrices)):
-            summary_data_layout.addWidget(QLabel(metrices[i]),i+1,0)
-        col=1
-        for column,data in summary_data.items():
-            summary_data_layout.addWidget(QLabel(str(column)),0,col)
-            for i in range(len(metrices)):
-                summary_data_layout.addWidget(QLabel(str(round(data[metrices[i]],2))),i+1,col)
-            col+=1
-
-        summary_label=QLabel("Summary")
-        summary_label.setObjectName("heading")
-        summary_label.setAlignment(Qt.AlignCenter)
-        layout_summary.addWidget(summary_label)
-        layout_summary.addLayout(summary_data_layout)
-
-        # correlation
-        numeric_columns = df.select_dtypes(include='number').columns
-        correlation_df = df[numeric_columns]
-
-        # Compute correlation
-        correlation_matrix = correlation_df.corr().to_dict()
-        corr_keys=list(correlation_matrix.keys())
-        # print("Correlation:")
-        # print(correlation_matrix)
-        # print(corr_keys)
-        # print()
-        layout_corr=QVBoxLayout()
-        corr_data_layout=QGridLayout()
-        
-        for i in range(len(corr_keys)):
-            corr_data_layout.addWidget(QLabel(corr_keys[i]),i+1,0)
-            corr_data_layout.addWidget(QLabel(corr_keys[i]),0,i+1)
-
-        for row in range(len(corr_keys)):
-            for col in range(len(corr_keys)):
-                corr_data_layout.addWidget(QLabel(str(round(correlation_matrix[corr_keys[row]][corr_keys[col]],3))),row+1,col+1)
-
-        corr_label=QLabel("Correlation Summary")
-        corr_label.setObjectName("heading")
-        corr_label.setAlignment(Qt.AlignCenter)
-        layout_corr.addWidget(corr_label)
-        layout_corr.addLayout(corr_data_layout)
-
-
-        layout.addLayout(layout_dtype)
-        layout.addLayout(layout_unique)
-        layout.addLayout(layout_missing)
-        layout.addLayout(layout_summary)
-        layout.addLayout(layout_corr)
-        widget.setLayout(layout)
-
-        self.setCentralWidget(widget)
-
-        apply_stylesheet(self,'styles/statistics.qss')
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.setWindowTitle("Graph between variables")
+        self.setMinimumSize(1000,600)
 
         self.dataFrame=globalData.give_data()
-
-        self.setWindowTitle("Show the data")
-        self.setMinimumSize(500,500)
+        self.first_time_change=True
         self.msg_box=None
 
-        widget=QWidget()
-        self.open_btn=FirstButton("Open File","open_btn",self.open_file)
-                
+        self.left_layout=QVBoxLayout()
+        self.right_layout=QVBoxLayout()
+
+        self.combo_first=QComboBox()
+        # self.combo_first.setMinimumWidth(150)
+        self.combo_first.currentIndexChanged.connect(self.make_plot)
+        
+        self.combo_second=QComboBox()
+        self.combo_second.currentIndexChanged.connect(self.make_plot)
+
+        self.left_layout.addWidget(self.combo_first)
+        self.left_layout.addWidget(self.combo_second)
+
+
+        self.open_btn=FirstButton("Open File","open_btn",self.open_file_function)
+
+
+
         self.sep=QLineEdit()
         self.sep.setPlaceholderText("Enter the separator (; , ...etc)")
         self.sep.setObjectName("separator")
 
-        self.model=QStandardItemModel()
-        table=QTableView()
-        table.setModel(self.model)
-        table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        table.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.right_up=QHBoxLayout()
+        self.right_up.addWidget(self.open_btn)
+        self.right_up.addWidget(self.sep)
+        # left-top-right-bottom
+        self.right_layout.setContentsMargins(5,10,0,5)
 
-        hbox=QHBoxLayout()
-        hbox.addWidget(self.open_btn)
-        hbox.addWidget(self.sep)
-
-        statistics_btn=FirstButton("Show Statistics","statistics",self.show_statistics)
+        # self.chart_view=QChartView()
+        # **********************************************
+        self.x_min,self.x_max,self.y_min,self.y_max=0,1,0,1
+        self.chart=QChart() 
+        self.chart.legend().hide()
+        self.chart.setTheme(1)
+        self.axis_x=QValueAxis()
+        self.axis_x.setRange(self.x_min,self.x_max)
         
-        layout=QVBoxLayout()
-        layout.addLayout(hbox)
-        layout.addWidget(table)
-        layout.addWidget(statistics_btn)
-        widget.setLayout(layout)
+        self.axis_y=QValueAxis()
+        self.axis_y.setRange(self.y_min,self.y_max)
 
+        self.chart.addAxis(self.axis_x,Qt.AlignBottom)
+        self.chart.addAxis(self.axis_y,Qt.AlignLeft)
+
+
+        self.chart_view=ChartView(self.chart)
+        self.chart_view.setStyleSheet("background-color: transparent;")
+
+        # ***********************************************
+
+        widget=QWidget()
+
+        right_widget=QWidget()
+        right_widget.setObjectName("container")
+
+        self.main_layout=QHBoxLayout()
+
+        self.right_layout.addLayout(self.right_up)
+        self.right_layout.addWidget(self.chart_view)
+        right_widget.setLayout(self.right_layout)
+
+        # self.main_layout.addLayout(self.left_layout)
+        # self.main_layout.addLayout(self.right_layout)
+        self.main_layout.addWidget(right_widget)
+
+        self.main_layout.setContentsMargins(0,0,0,0)
+        self.main_layout.setSpacing(0)
+
+        widget.setLayout(self.main_layout)
 
         self.setCentralWidget(widget)
 
-        apply_stylesheet(self,'styles/data_model.qss')
-        self.show_model_function()
+        self.setupToolsDockWidget()
+        self.setupMenu()
 
+        
+        apply_stylesheet(self,'styles/graph.qss')
 
-    def open_file(self):
+        self.assign_combobox_values()
+
+    
+    def open_file_function(self):
+
+        self.first_time_change=True
 
         res=Open_Datafile(self,self.sep)
 
@@ -220,63 +116,240 @@ class MainWindow(QMainWindow):
             self.msg_box.show()
             return
         
-        self.dataFrame=res[1]   
 
-        self.show_model_function()
+        self.dataFrame=res[1]
+        globalData.assign_data(self.dataFrame)
+        self.assign_combobox_values()
 
-    def show_model_function(self):
 
+    def assign_combobox_values(self):
         if self.dataFrame is None:
             return
+        self.combo_first.blockSignals(True)
+        self.combo_first.clear()
+        self.combo_first.blockSignals(False)
+        self.combo_second.blockSignals(True)
+        self.combo_second.clear()
+        self.combo_second.blockSignals(False)
+        self.combo_first.addItems(self.dataFrame.columns)
+        self.combo_second.addItems(self.dataFrame.columns)
+
+
+    def make_plot(self):
+        if self.first_time_change:
+            self.first_time_change=False
+            return
+        x_dim=self.combo_first.currentText()
+        y_dim=self.combo_second.currentText()
+
+        x_dtype=self.dataFrame[x_dim].dtype
+        y_dtype=self.dataFrame[y_dim].dtype
+
+        self.x_min,self.x_max,self.y_min,self.y_max=10**18,-10**18,10**18,-10**18
+
+        # print(x_dim,y_dim)
+
+        line_series=QLineSeries()
+        line_series=QScatterSeries()
         
+
+        for x,y in zip(self.dataFrame[x_dim],self.dataFrame[y_dim]):
+            if (type(x)!=int and type(x)!=float) or (type(y)!=int and type(y)!=float):
+                self.chart.removeAllSeries()
+                # print(x,y,type(x),type(y))
+                return
+            self.x_min=min(self.x_min,x)
+            self.x_max=max(self.x_max,x)
+            self.y_min=min(self.y_min,y)
+            self.y_max=max(self.y_max,y)
+            line_series.append(x,y)
+
         
 
-        # # Data Distribution (Histograms)
-        # print("Data Distribution:")
-        # for column in df.select_dtypes(include='number').columns:
-        #     df[column].plot(kind='hist')
-        #     plt.title(column)
-        #     plt.show()
+        # print("yes")
+        int_types=[int,np.int64,np.int32,np.int16,np.int8]
 
-        # # Categorical Variables (Bar Plots)
-        # print("Categorical Variables:")
-        # for column in df.select_dtypes(include='object').columns:
-        #     df[column].value_counts().plot(kind='bar')
-        #     plt.title(column)
-        #     plt.show()
+        self.axis_x=QValueAxis()
+        self.axis_x.setRange(self.x_min,self.x_max)
+        self.axis_x.setTitleText(str(x_dim))
+        self.axis_x.setTitleFont(QFont("consolas",13))
+        if x_dtype in int_types:
+            self.axis_x.setLabelFormat("%i")
 
-        # # Data Preview
-        # print("Data Preview (First 5 Rows):")
-        # print(df.head())
+        self.axis_y=QValueAxis()
+        self.axis_y.setRange(self.y_min,self.y_max)
+        self.axis_y.setTitleText(str(y_dim))
+        self.axis_y.setTitleFont(QFont("consolas",13))
+        if y_dtype in int_types:
+            self.axis_y.setLabelFormat("%i")
+            
 
-        globalData.assign_data(self.dataFrame)
-        columns=list(self.dataFrame.columns)
-        # print(columns)
-        self.model.setColumnCount(len(columns))
-        self.model.setHorizontalHeaderLabels(columns)
-
-        for ind,value in enumerate(self.dataFrame.values):
-            # print(df.value)
-            items=[QStandardItem(str(val)) for val in value]
-            self.model.insertRow(ind,items)
+        self.chart=QChart()
+        self.chart.legend().hide()
+        self.chart.setTheme(1)
+        self.chart.addAxis(self.axis_x,Qt.AlignBottom)
+        self.chart.addAxis(self.axis_y,Qt.AlignLeft)
 
 
-    def show_statistics(self):
-        # self.stat_window=StatisticsWindow(self)
-        self.stat_window=StatisticsWindow(self.dataFrame)
-        scroll_area=QScrollArea()
-        scroll_area.setWidget(self.stat_window)
-        scroll_area.setWidgetResizable(True)
-        self.setCentralWidget(scroll_area)
-        # self.setCentralWidget(StatisticsWindow(self))
-        # self.stat_window.show()
+        self.chart.addSeries(line_series)
+        line_series.attachAxis(self.axis_x)
+        line_series.attachAxis(self.axis_y)
 
-    def closeEvent(self, event):
-        store.close()
+        self.chart_view=ChartView(self.chart)
+        self.chart_view.setStyleSheet("background-color: transparent;")
+
+        self.refresh_plot()
 
     
+    def refresh_plot(self):
 
-if __name__=="__main__":
+        self.left_layout=QVBoxLayout()
+        self.right_layout=QVBoxLayout()
+
+
+        self.sep=QLineEdit()
+        self.sep.setPlaceholderText("Enter the seperator")
+        self.sep.setObjectName("separator")
+
+        self.right_up=QHBoxLayout()
+        self.right_up.addWidget(self.open_btn)
+        self.right_up.addWidget(self.sep)
+
+
+        widget=QWidget()
+        self.main_layout=QHBoxLayout()
+        right_widget=QWidget()
+        right_widget.setObjectName("container")
+
+
+        self.right_layout.addLayout(self.right_up)
+        self.right_layout.addWidget(self.chart_view)
+
+        right_widget.setLayout(self.right_layout)
+        
+        self.main_layout.addWidget(right_widget)
+
+        widget.setLayout(self.main_layout)        
+
+        self.main_layout.setContentsMargins(0,0,0,0)
+        self.main_layout.setSpacing(0)
+
+        self.setCentralWidget(widget)
+
+
+
+
+    def setupToolsDockWidget(self):
+        tools_dock=QDockWidget()
+        tools_dock.setWindowTitle("Tools")
+        tools_dock.setMinimumWidth(300)
+        tools_dock.setMaximumWidth(300)
+
+        tools_dock.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
+
+        themes_cb=QComboBox()
+        themes_cb.addItems(["Cerulean Blue","Light", "Dark", "Sand Brown", "NCS Blue", "High Contrast", "Icy Blue", "Qt"])
+        themes_cb.currentTextChanged.connect(self.changeChartTheme)
+        # themes_cb.setStyleSheet("")
+
+        self.animations_cb=QComboBox()
+        self.animations_cb.addItem("No Animation",QChart.NoAnimation)
+        self.animations_cb.addItem("Grid Animation",QChart.GridAxisAnimations)
+        self.animations_cb.addItem("Series Animation",QChart.SeriesAnimations)
+        self.animations_cb.addItem("All Animations",QChart.AllAnimations)
+
+        self.animations_cb.currentIndexChanged.connect(self.changeAnimations)
+
+        self.legend_cb=QComboBox()
+        self.legend_cb.addItem("No Legend")
+        self.legend_cb.addItem("Align Left",Qt.AlignLeft)
+        self.legend_cb.addItem("Align Top",Qt.AlignTop)
+        self.legend_cb.addItem("Align Right",Qt.AlignRight)
+        self.legend_cb.addItem("Align Bottom",Qt.AlignBottom)
+        self.legend_cb.currentTextChanged.connect(self.changeLegend)
+
+        self.antialiasing_cb=QCheckBox()
+        self.antialiasing_cb.toggled.connect(self.toggleAntialiasing)
+
+        reset_button=FirstButton("Reset Chart Axes","reset_btn",self.resetChartZoom)
+        
+        dock_form=QFormLayout()
+        dock_form.setAlignment(Qt.AlignTop)
+        theme_label=QLabel("Themes")
+        theme_label.setObjectName("theme_label")
+        dock_form.addRow(theme_label,themes_cb)
+        # label.setText("Animations: ")
+        animation_label=QLabel("Animations: ")
+        animation_label.setObjectName("animation_label")
+        dock_form.addRow(animation_label,self.animations_cb)
+        # dock_form.addRow(QLabel("Legend: "),self.legend_cb)
+
+        aliasing_label=QLabel("Anti-Aliasing: ")
+        aliasing_label.setObjectName("aliasing_label")
+        dock_form.addRow(aliasing_label,self.antialiasing_cb)
+        dock_form.addRow(reset_button)
+        dock_form.addRow(self.combo_first)
+        dock_form.addRow(self.combo_second)
+        # dock_form.addChildLayout(self.left_layout)
+        # dock_form.addRow(data_table_view)
+
+        tools_container=QWidget()
+        tools_container.setObjectName("tools_container")
+        tools_container.setLayout(dock_form)
+        tools_dock.setWidget(tools_container)
+        # print(tools_dock.width())
+        # print(tools_dock.width())
+
+        self.addDockWidget(Qt.LeftDockWidgetArea,tools_dock)
+
+        self.toggle_dock_tools_act=tools_dock.toggleViewAction()
+
+    
+    def changeChartTheme(self,text):
+        themes_dict = {"Light": 0, "Cerulean Blue": 1, "Dark": 2, "Sand Brown": 3, "NCS Blue": 4, "High Contrast": 5, "Icy Blue": 6, "Qt": 7}
+        theme = themes_dict.get(text)
+
+        self.chart.setTheme(theme)
+
+    def changeAnimations(self):
+        animation=QChart.AnimationOptions(self.animations_cb.itemData(self.animations_cb.currentIndex()))
+        self.chart.setAnimationOptions(animation)
+
+    def changeLegend(self,text):
+        alignment = self.legend_cb.itemData(self.legend_cb.currentIndex())
+        if text=='No Legend':
+            self.chart.legend().hide()
+        else:
+            self.chart.legend().setAlignment(Qt.Alignment(alignment))
+            self.chart.legend().show()
+
+    def toggleAntialiasing(self,state):
+        if state:
+            self.chart_view.setRenderHint(QPainter.Antialiasing, on=True)
+        else:
+            self.chart_view.setRenderHint(QPainter.Antialiasing, on=False)
+
+    def resetChartZoom(self):
+        self.chart.zoomReset()
+        # print(self.x_min,self.x_max)
+        # print(self.y_min,self.y_max)
+        self.axis_x.setRange(self.x_min,self.x_max)
+        self.axis_y.setRange(self.y_min,self.y_max)
+
+    def setupMenu(self):
+        menu_bar=self.menuBar()
+        menu_bar.setNativeMenuBar(False)
+
+        view_menu=menu_bar.addMenu('View')
+        view_menu.addAction(self.toggle_dock_tools_act)
+            
+    
+    def closeEvent(self,event):
+        store.close()
+
+
+
+if __name__=='__main__':
     app=QApplication(sys.argv)
     window=MainWindow()
     window.show()
