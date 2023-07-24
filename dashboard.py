@@ -227,7 +227,7 @@ class MainWindow(QMainWindow):
         self.train_model_btn.leaveEvent=lambda event:self.clear_status_message()
 
 
-        # visualized_icon=QPixmap("icons/data_visualization_icon.jpg")
+        # visualized_icon=QPixmap("icons/data_visualization.jpg")
         visualized_icon=QPixmap("icons/data_visualization_icon_1.png")
         visualized_btn=QPushButton(QIcon(visualized_icon),"")
         visualized_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)

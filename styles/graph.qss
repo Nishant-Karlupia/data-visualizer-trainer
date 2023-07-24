@@ -66,14 +66,15 @@ QWidget#tools_container {
 QLabel#theme_label,QLabel#animation_label,QLabel#aliasing_label {
   font-size: 18px;
   color: white;
-  margin-bottom: 7px;
-  margin-top: 10px;
+  margin-bottom: 20px;
+  margin-top: 15px;
 }
 QComboBox {
-  margin-bottom: 7px;
-  margin-top: 10px;
-  font-size: 17px;
+  margin-bottom: 20px;
+  margin-top: 15px;
+  font-size: 18px;
   padding: 2px 0px;
+  font-family: consolas;
 }
 QComboBox:hover {
   background-color: rgb(249, 243, 243);
@@ -81,9 +82,16 @@ QComboBox:hover {
   outline: none;
 }
 
+/* QComboBox#chart_type
+{
+  color: yellow;
+  font-c
+} */
+
+
 QCheckBox {
-  margin-bottom: 7px;
-  margin-top: 10px;
+  margin-bottom: 30px;
+  margin-top: 15px;
 }
 
 QWidget#container {
