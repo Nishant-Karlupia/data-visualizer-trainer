@@ -11,8 +11,12 @@ from PyQt5.QtGui import QPainter,QFont
 from globalParams.stateStore import store
 from globalParams.dataStore import globalData
 
+themes_dict = {"Light": 0, "Cerulean Blue": 1, "Dark": 2, "Sand Brown": 3, "NCS Blue": 4, "High Contrast": 5, "Icy Blue": 6, "Qt": 7}
+        
+
 
 class MainWindow(QMainWindow):
+    global themes_dict
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Graph between variables")
@@ -43,6 +47,11 @@ class MainWindow(QMainWindow):
         self.bar_combo.currentIndexChanged.connect(self.make_bar_chart)
         self.pie_combo=QComboBox()
 
+        self.themes_cb=QComboBox()
+        self.themes_cb.addItems(["Cerulean Blue","Light", "Dark", "Sand Brown", "NCS Blue", "High Contrast", "Icy Blue", "Qt"])
+        self.themes_cb.currentTextChanged.connect(self.changeChartTheme)
+        
+
         # self.left_layout.addWidget(self.line_combo_first)
         # self.left_layout.addWidget(self.line_combo_second)
 
@@ -66,7 +75,7 @@ class MainWindow(QMainWindow):
         self.x_min,self.x_max,self.y_min,self.y_max=0,1,0,1
         self.line_chart=QChart() 
         self.line_chart.legend().hide()
-        self.line_chart.setTheme(1)
+        self.line_chart.setTheme(themes_dict[self.themes_cb.currentText()])
         self.axis_x=QValueAxis()
         self.axis_x.setRange(self.x_min,self.x_max)
         
@@ -107,6 +116,8 @@ class MainWindow(QMainWindow):
         self.setChartTypeWidget()
         self.setupToolsDockWidget()
         self.setupMenu()
+
+
 
         
         apply_stylesheet(self,'styles/graph.qss')
@@ -220,7 +231,7 @@ class MainWindow(QMainWindow):
 
         self.line_chart=QChart()
         self.line_chart.legend().hide()
-        self.line_chart.setTheme(1)
+        self.line_chart.setTheme(themes_dict[self.themes_cb.currentText()])
         self.line_chart.addAxis(self.axis_x,Qt.AlignBottom)
         self.line_chart.addAxis(self.axis_y,Qt.AlignLeft)
 
@@ -349,7 +360,7 @@ class MainWindow(QMainWindow):
         # print(text)
 
         self.bar_chart=QChart()
-        self.bar_chart.setTheme(1)
+        self.bar_chart.setTheme(themes_dict[self.themes_cb.currentText()])
         bar_series=QBarSeries()
         barset=QBarSet("Simple Bar series")
         val=list(self.dataFrame.nunique().to_dict().values())
@@ -392,9 +403,6 @@ class MainWindow(QMainWindow):
 
         tools_dock.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
 
-        themes_cb=QComboBox()
-        themes_cb.addItems(["Cerulean Blue","Light", "Dark", "Sand Brown", "NCS Blue", "High Contrast", "Icy Blue", "Qt"])
-        themes_cb.currentTextChanged.connect(self.changeChartTheme)
         # themes_cb.setStyleSheet("")
 
         self.animations_cb=QComboBox()
@@ -421,7 +429,7 @@ class MainWindow(QMainWindow):
         dock_form.setAlignment(Qt.AlignTop)
         theme_label=QLabel("Themes")
         theme_label.setObjectName("theme_label")
-        dock_form.addRow(theme_label,themes_cb)
+        dock_form.addRow(theme_label,self.themes_cb)
         # label.setText("Animations: ")
         animation_label=QLabel("Animations: ")
         animation_label.setObjectName("animation_label")

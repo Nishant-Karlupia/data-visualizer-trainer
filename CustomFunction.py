@@ -20,7 +20,7 @@ def Open_Datafile(self,sepLineEdit):
             if len(sep)>0:
                 dataFrame=pd.read_excel(filename,sep=sep)
             else:
-                dataFrame=pd.read_csv(filename)
+                dataFrame=pd.read_excel(filename)
             get=True
         
         if not get:
