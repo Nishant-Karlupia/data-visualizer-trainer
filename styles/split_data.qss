@@ -1,5 +1,11 @@
+QMainWindow
+{
+    background-color: black;
+}
+
 QListWidget {
     background-color: #f0bdbd;
+    background-color: rgb(30,30,35);
     /* border: 1px solid #CCCCCC; */
     border-radius: 5px;
     font-family: consolas;
@@ -7,16 +13,19 @@ QListWidget {
 }
 
 QListWidget::Item {
-    background-color: #f0bdbd;
+    /* background-color: #f0bdbd; */
+    border: 0.5px solid #CCCCCC;
     padding: 5px;
+    margin-bottom: 3px;
+    color: white;
 }
 
 QListWidget::Item:hover {
-    background-color: #987676;
+    background-color: rgb(47, 52, 69);
 }
 
 QListWidget::Item:selected {
-    background-color: #d77070;
+    background-color: rgb(54, 73, 136);
 }
 
 QPushButton#confirm_btn {
@@ -42,7 +51,9 @@ QPushButton#close_btn {
 
 QLabel#train,QLabel#target,QLabel#nrdatalabel
 {
-    font-size: 20px;
+    font-size: 22px;
     font-family: consolas;
+    color: white;
+    margin-bottom: 15px;
 }
 

@@ -196,7 +196,8 @@ class MainWindow(QMainWindow):
         hbox.addWidget(self.sep)
 
         self.statistics_btn=FirstButton("Show Statistics","statistics",self.set_statistics_layout)
-        self.statistics_btn.setDisabled(True)
+        if self.dataFrame is None:
+            self.statistics_btn.setDisabled(True)
 
         
         layout=QVBoxLayout()

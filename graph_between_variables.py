@@ -31,7 +31,8 @@ class MainWindow(QMainWindow):
         self.right_layout=QVBoxLayout()
 
         self.chart_type_combo=QComboBox()
-        self.chart_type_combo.setDisabled(True)
+        if self.dataFrame is None:
+            self.chart_type_combo.setDisabled(True)
         self.chart_type_combo.addItems(['Line Chart','Pie Chart','Bar Chart'])
         self.chart_type_combo.currentTextChanged.connect(self.change_chart_type_widget)
 

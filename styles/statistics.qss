@@ -1,6 +1,8 @@
 QWidget
 {
     background-color: rgb(197, 194, 194);
+    background-color: rgb(16,22,22);
+    color: white;
 }
 
 QLabel#heading
@@ -19,6 +21,6 @@ QLabel
 {
     /* background-color: red; */
     font-family: arial;
-    font-size: 15px;
+    font-size: 20px;
     border: 2px solid gray;
 }

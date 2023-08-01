@@ -1,0 +1,40 @@
+
+QWidget
+{
+    background-color: rgb(16,22,22);
+    color: white;
+    font-family: consolas;
+    font-size: 20px;
+}
+
+QLabel
+{
+    font-size: 25px;
+    margin-bottom: 20px;
+}
+
+QPushButton
+{
+    margin-top: 30px;
+}
+
+QPushButton#ok_btn {
+    background-color: #381954;
+    color: white;
+    font-size: 25px;
+    font-family: consolas;
+    min-height: 35px;
+    border-radius: 17px;
+}
+QPushButton#ok_btn:disabled {
+    background-color: gray;
+}
+
+QPushButton#close_btn {
+    background-color: rgb(228, 45, 45);
+    color: white;
+    font-size: 25px;
+    font-family: consolas;
+    min-height: 35px;
+    border-radius: 17px;
+}

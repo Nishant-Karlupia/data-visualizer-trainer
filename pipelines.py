@@ -195,8 +195,8 @@ class ProcessingWindow(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setMinimumSize(750,380)
 
-        self.close_btn=FirstButton("Close","close",self.close)
-        self.ok_btn=FirstButton("ok","ok",lambda:self.addColumnIndex(imputer_columns,scale_columns,ohe_columns))
+        self.ok_btn=FirstButton("ok","ok_btn",lambda:self.addColumnIndex(imputer_columns,scale_columns,ohe_columns))
+        self.close_btn=FirstButton("Close","close_btn",self.close)
         self.btnlayout=QHBoxLayout()
         self.btnlayout.addWidget(self.ok_btn)
         self.btnlayout.addWidget(self.close_btn)
@@ -251,6 +251,8 @@ class ProcessingWindow(QMainWindow):
         self.final_layout.addLayout(self.btnlayout)
 
         widget.setLayout(self.final_layout)
+
+        apply_stylesheet(self,"styles/process_window.qss")
 
         self.setCentralWidget(widget)
     

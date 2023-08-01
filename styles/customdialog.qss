@@ -28,7 +28,12 @@ QDialog
 {
     background-color: rgb(198, 228, 192);
     border: 2px solid rgb(128, 128, 128);
+    background-color: rgb(16,22,22);
     /* border-radius: 5px; */
+}
+QLabel
+{
+    color: white;
 }
 
 QPushButton#ok
