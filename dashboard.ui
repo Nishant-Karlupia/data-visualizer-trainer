@@ -87,7 +87,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Data Visualization</string>
+        <string>Data Visualization and Training</string>
        </property>
        <property name="textFormat">
         <enum>Qt::PlainText</enum>

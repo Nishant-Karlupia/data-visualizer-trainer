@@ -1,0 +1,44 @@
+QWidget
+{
+    background-color: rgb(16,22,22);
+    font-family: consolas;
+    color: white;
+}
+QLabel
+{
+    font-size: 25px;
+}
+QLineEdit
+{
+    padding: 5px;
+    font-size: 18px;
+}
+
+QPushButton
+{
+    margin-top: 18px;
+    margin-bottom: 5px;
+}
+
+QPushButton#confirm_btn {
+    background-color: #381954;
+    color: white;
+    font-size: 25px;
+    font-family: consolas;
+    min-height: 30px;
+    max-height: 30px;
+    border-radius: 15px;
+}
+QPushButton#confirm_btn:disabled {
+    background-color: gray;
+}
+
+QPushButton#close_btn {
+    background-color: rgb(228, 45, 45);
+    color: white;
+    font-size: 25px;
+    font-family: consolas;
+    min-height: 30px;
+    max-height: 30px;
+    border-radius: 15px;
+}

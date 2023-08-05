@@ -32,7 +32,7 @@ QTextEdit#train_report
     font-size: 25px;
 }
 
-QPushButton#train_btn,QPushButton#select_train_test_btn
+QPushButton#train_predict_btn,QPushButton#select_train_test_btn
 {
     background-color: #532a7a;
     color: yellow;
@@ -48,7 +48,7 @@ QPushButton#train_btn,QPushButton#select_train_test_btn
     font-size: 22px;
     font-family: consolas;
 }
-QPushButton#select_train_test_btn:disabled {
+QPushButton#select_train_test_btn:disabled,QPushButton#train_predict_btn:disabled {
   background-color: gray;
 }
 

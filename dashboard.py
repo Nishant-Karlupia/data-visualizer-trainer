@@ -9,6 +9,7 @@ from globalParams.stateStore import store
 from graph_between_variables import MainWindow as Graph
 from show_data_model import MainWindow as DataModel
 from train_models import MainWindow as TrainModel
+from pipelines import MainWindow as TrainModel
 from globalParams.dataStore import globalData
 
 GITHUB="https://github.com/Nishant-Karlupia"
