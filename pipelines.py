@@ -1,4 +1,5 @@
 import sys
+from PyQt5 import QtGui
 import pandas as pd
 import numpy as np
 from PyQt5.QtCore import QObject, Qt,QThread,pyqtSignal
@@ -343,10 +344,29 @@ class ProcessingWindow(QMainWindow):
 
 class CustomUserInputWindow(QMainWindow):
 
-    def __init__(self,colums,values):
+    def __init__(self,columns,types,model,result_window):
         super().__init__()
+        self.setWindowFlags(Qt.FramelessWindowHint)
 
         widget=QWidget()
+
+        self.model=model
+        self.columns=columns
+
+        self.result_window=result_window
+        self.report_txt=result_window.toPlainText()
+
+        self.types=types
+        # print(self.types)
+        for i in range(len(self.types)):
+            if str(self.types[i]).startswith("int"):
+                self.types[i]=int
+
+            elif str(self.types[i]).startswith("float"):
+                self.types[i]=float
+            else:
+                self.types[i]=str
+
 
         layout=QVBoxLayout()
 
@@ -354,7 +374,7 @@ class CustomUserInputWindow(QMainWindow):
 
         self.value_fields=[]
 
-        for col in colums:
+        for col in columns:
             field=QLabel(str(col))
             value=QLineEdit()
             self.value_fields.append(value)
@@ -363,7 +383,7 @@ class CustomUserInputWindow(QMainWindow):
 
         btn_layout=QHBoxLayout()
         
-        self.confirm_btn=FirstButton("OK","confirm_btn",lambda :self.print_results(values))
+        self.confirm_btn=FirstButton("OK","confirm_btn", lambda: self.print_results(result_window))
         self.close_btn=FirstButton("Close","close_btn",self.close)
 
         btn_layout.addWidget(self.confirm_btn)
@@ -376,19 +396,49 @@ class CustomUserInputWindow(QMainWindow):
 
         widget.setLayout(layout)
 
+        
+
 
         self.setCentralWidget(widget)
 
         apply_stylesheet(self,"styles/custominput.qss")
 
     
-    def print_results(self,values):
+    def print_results(self,result_window):
 
-        for value in self.value_fields:
-            # print(value.text(),type(value.text()))
-            values.append(value.text())
+        # test_input=[[3,"male",22,1,0,7.25,"S"],
+        #                 [1,"female",38,1,0,71.2833,"C"]]
+            
+       
 
-        print(values)
+        values=[]
+        for value,type in zip(self.value_fields,self.types):
+            try:
+                value=type(value.text())
+            except:
+                pass
+            
+            values.append(value)
+
+        test_df=pd.DataFrame([values],columns=self.columns)
+        # print(test_df.dtypes)
+
+        transformed_test = self.model.named_steps['preprocessor'].transform(test_df)
+
+        # print(transformed_test)
+
+        predicted= self.model.named_steps['regressor'].predict(transformed_test)
+        result_window.setText("Result: "+str(predicted[0][0]))
+
+
+
+    def closeEvent(self,event):
+
+        # print(self.result_window.toPlainText())
+        self.result_window.setText(self.report_txt)
+
+        event.accept()
+
 
 
 
@@ -425,11 +475,14 @@ class MainWindow(QMainWindow):
         self.split_btn=FirstButton("Select Train Test","select_train_test_btn",self.open_data_split_window)
         self.process_btn=FirstButton("Process","select_train_test_btn",self.open_data_processing_window)
         self.train_btn=FirstButton("Train","train_predict_btn",self.train_model_function)
-        self.predict_btn=FirstButton("Predict","train_predict_btn")
+        self.predict_btn=FirstButton("Predict","train_predict_btn",self.predict_custom_data)
 
         self.train_btn.setDisabled(True)
         self.predict_btn.setDisabled(True)
         self.train_report=QTextEdit()
+
+        
+
         self.train_report.setReadOnly(True)
         if self.df is None:
             self.train_report.setText("No data available")
@@ -502,6 +555,8 @@ class MainWindow(QMainWindow):
         store.add(self.data_split)
         self.data_split.show()
 
+        
+
 
     def open_data_split_window(self):
         
@@ -523,6 +578,7 @@ class MainWindow(QMainWindow):
         x_train,x_test,y_train,y_test=train_test_split(X,y,test_size=0.3)
 
         self.train_columns=x_train.columns
+        self.train_columns_types=X.dtypes
         
         self.worker=Worker(x_train,y_train,x_test,y_test,self.imputer_columns,self.scaling_columns,self.ohe_columns)
         self.worker.matrix.connect(self.print_report)
@@ -547,29 +603,18 @@ class MainWindow(QMainWindow):
         # print(matrix)
         self.train_report.setText(report)
 
-        self.predict_custom_data()
+        # self.predict_custom_data()
 
     
     def predict_custom_data(self):
-        # test_input=[[3,"male",22,1,0,7.25,"S"],
-        #                 [1,"female",38,1,0,71.2833,"C"]]
-            
-        # test_df = pd.DataFrame(test_input, columns=self.train_columns)
 
-        # # Transform the DataFrame using the preprocessor
-        # transformed_test = self.model.named_steps['preprocessor'].transform(test_df)
-        # # print(transformed_test)
-
-        # predicted_survived = self.model.named_steps['regressor'].predict(transformed_test)
-
-        # print(predicted_survived)
-
-        values=[]
-        self.user_input_window=CustomUserInputWindow(self.train_columns,values)
+        # print(self.train_columns_types)
+        
+        self.user_input_window=CustomUserInputWindow(self.train_columns,self.train_columns_types,self.model,self.train_report)
         store.add(self.user_input_window)
 
         self.user_input_window.show()
-        print(values)
+
 
 
 
