@@ -19,46 +19,51 @@ What this app offers (the results are to the latest code work, I am also current
 # You need not to write any code for any of the functionality.
 
 see the work below
+![Screenshot 2023-08-08 224905](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/7781b0c6-7723-4d86-a1e3-b68a748db04c)
 
 # view model
 
-![image](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/bd312c53-7f8d-4a78-8d48-fd2c710d5eca)
-
 upload the data file
+![Screenshot 2023-08-08 225050](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/aa909149-6fb0-406f-a11d-75e5a5a62c97)
 
-![image](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/c497ffe6-545b-43eb-abfe-0ccd496625e7)
 
-![image](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/c15ad934-4d58-4aef-98b4-6413b26e1a21)
+![Screenshot 2023-08-08 225116](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/6402ac81-420a-43b2-9a9a-c0b8b23dba05)
 
 see the statistics
-![image](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/02ded986-2298-49dd-91be-6c362e72a726)
+
+![Screenshot 2023-08-08 225201](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/cae84a93-d3b9-4c14-947e-4e6bc4381f54)
 
 # visualize the data
 
 scatter plot
-![image](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/d49d7638-7114-436e-9f6d-e4ee2f753403)
+![Screenshot 2023-08-08 225315](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/62675430-503c-437f-9306-057c50aed97c)
 
 bar chart
 (whole dataFrame)
-![image](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/5b8a8359-ecf6-4e97-8bcf-0d18f4678944)
+![Screenshot 2023-08-08 225343](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/75946715-2006-4f8d-a1c7-130939dcb05b)
 
 (particular column)
-![image](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/72fb7dea-5603-4ba1-93f9-2d059b55e6ed)
+
+![Screenshot 2023-08-08 225422](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/d8f1380f-3cde-4bbc-affe-41902373aa8c)
+
 
 # Training Models
 
 select training and target variables
-![image](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/38c4b575-0c69-4a75-a2ff-98de77da09b1)
+![Screenshot 2023-08-08 225615](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/614abd18-1ee3-45c9-99f8-6c2f0a633b5d)
+
 
 process the variables
-![image](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/855bc670-ead0-40c7-9870-d2406dd150f0)
+![Screenshot 2023-08-08 225722](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/95140516-fd8e-4464-beb1-cd8d8f3cd5f7)
+
 
 Train the model and see the results
-![image](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/2019c165-88f8-41a9-ad3e-8fa3a9123933)
+![Screenshot 2023-08-08 225910](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/a3a16516-8742-4422-b87f-4fb98e75fd2b)
+
 
 test custom input
-![image](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/85f4f073-1344-4762-a922-282e714188e1)
+![Screenshot 2023-08-08 230021](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/b8647259-2aaa-4172-8343-3434312f7c2b)
 
-![image](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/e1227ee1-2cb6-4008-9347-9d588ccf3104)
+![Screenshot 2023-08-08 230106](https://github.com/Nishant-Karlupia/data-visualizer-trainer/assets/107272998/0ac39849-7d17-47a0-8bb5-18a1a00b9ac6)
 
 
