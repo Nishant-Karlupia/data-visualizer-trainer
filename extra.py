@@ -1,12 +1,14 @@
 import sys
+from PyQt5 import QtGui
 import pandas as pd
 import numpy as np
 from PyQt5.QtCore import QObject, Qt,QThread,pyqtSignal
-from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QLineEdit,QHBoxLayout,QMessageBox,QLabel,QGridLayout,QFrame,QTextEdit,QCheckBox,QComboBox
+from PyQt5.QtWidgets import QMainWindow,QWidget,QApplication,QVBoxLayout,QLineEdit,QHBoxLayout,QMessageBox,QLabel,QGridLayout,QFrame,QTextEdit,QCheckBox,QComboBox,QFormLayout
 from CustomWidgets import CustomListWidget,FirstButton,CustomMessageBox
 from CustomFunction import apply_stylesheet,Open_Datafile
-from sklearn.linear_model import LinearRegression,LogisticRegression
+from sklearn.linear_model import LinearRegression,LogisticRegression,SGDClassifier,SGDRegressor
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score
 from sklearn.preprocessing import StandardScaler,OneHotEncoder
@@ -17,12 +19,23 @@ from globalParams.stateStore import store
 from globalParams.dataStore import globalData
 
 
+all_models={
+    "Linear Regression":LinearRegression(),
+    "Logistic Regression":LogisticRegression(),
+    "SGDClassifier":SGDClassifier(),
+    "SGDRegressor":SGDRegressor(),
+    "DecisionTree":DecisionTreeClassifier(),
+    "KNN":KNeighborsRegressor()
+}
+
+
 
 class Worker(QThread):
+    global all_models
 
     matrix=pyqtSignal(dict)
 
-    def __init__(self,x_train,y_train,x_test,y_test,imputer_columns,scaling_columns,ohe_columns):
+    def __init__(self,x_train,y_train,x_test,y_test,imputer_columns,scaling_columns,ohe_columns,model_type):
         super().__init__()
         self.x_train= x_train
         self.y_train=y_train
@@ -31,20 +44,14 @@ class Worker(QThread):
         self.imputer_columns=imputer_columns
         self.scaling_columns=scaling_columns
         self.ohe_columns=ohe_columns
+        self.model_type=model_type
+        
 
     def run(self):
-            # print(self.x_train)
-            # print(self.imputer_columns)
-            self.x_train=pd.DataFrame(self.x_train)
-            # print(type(self.x_train))
-
-            print("Imputer: ",self.imputer_columns)
-            print("scale: ",self.scaling_columns)
-            print("ohe: ",self.ohe_columns)
-            # print(self.x_train.columns[self.scaling_columns])
-            # print(self.x_train.columns[self.ohe_columns])
-        # try:
-
+        self.x_train=pd.DataFrame(self.x_train)
+        # print(self.model_type)
+        try:
+            
             # ************imputers**********
             trf_imputer=ColumnTransformer(self.imputer_columns,remainder='passthrough')
             # ************imputers**********
@@ -54,7 +61,7 @@ class Worker(QThread):
                 ('embarked_imputer', SimpleImputer(strategy='most_frequent'), ['Embarked'])
             ]
             imputer_columns=[(self.imputer_columns[i][0],self.imputer_columns[i][1],[self.imputer_columns[i][0]]) for i in range(len(self.imputer_columns))]
-            print(imputer_columns)
+            # print(imputer_columns)
 
             trf_imputer = ColumnTransformer(imputer_columns, remainder='passthrough')
 
@@ -95,8 +102,6 @@ class Worker(QThread):
             #     ('regressor', LinearRegression())
             # ])  
 
-            columns=self.x_train.columns
-
 
             
             numeric_trf = Pipeline(steps=[
@@ -122,7 +127,7 @@ class Worker(QThread):
             # Define the final pipeline
             pipeline = Pipeline(steps=[
                 ('preprocessor', preprocessor),
-                ('regressor', LogisticRegression())
+                ('regressor', all_models[self.model_type[0]])
             ])
 
             pipeline.fit(self.x_train, self.y_train)
@@ -152,21 +157,6 @@ class Worker(QThread):
 
             # ********************************
 
-            test_input=[[3,"male",22,1,0,7.25,"S"],
-                        [1,"female",38,1,0,71.2833,"C"]]
-            
-            test_df = pd.DataFrame(test_input, columns=columns)
-
-            # Transform the DataFrame using the preprocessor
-            transformed_test = preprocessor.transform(test_df)
-            print(transformed_test)
-
-            predicted_survived = pipeline.named_steps['regressor'].predict(transformed_test)
-
-            print(predicted_survived)
-                        
-            # print(pipeline.predict(test_input))
-
             
             y_pred=pipeline.predict(self.x_test)
             mse=mean_squared_error(self.y_test,y_pred)
@@ -178,12 +168,13 @@ class Worker(QThread):
                 "Score":round(score,3),
                 "Coefficient of determination":round(cod,3),
                 "Mean Absolute Error":round(mae,3),
-                "Mean Squared Error":round(mse,3)
+                "Mean Squared Error":round(mse,3),
+                "model":pipeline
             }
             # matrix={"A":1}
             self.matrix.emit(matrix)
-        # except:
-        #     self.matrix.emit({})
+        except:
+            self.matrix.emit({})
 
 
 
@@ -257,19 +248,14 @@ class SplitWindow(QMainWindow):
     def data_change_occur(self):
         self.confirm_btn.setEnabled(True)
 
-"""
-# imputation transformer
-trf1=ColumnTransformer([
-    ('impute_age',SimpleImputer(),[2]),
-    ('imputer_embarker',SimpleImputer(strategy='most_frequent'),[6])
-],remainder='passthrough')
-"""
-
 
 
 
 class ProcessingWindow(QMainWindow):
-    def __init__(self,dataFrame,imputer_columns,scale_columns,ohe_columns):
+
+    global all_models
+
+    def __init__(self,dataFrame,imputer_columns,scale_columns,ohe_columns,model_type):
         super().__init__()
 
         self.df=dataFrame
@@ -281,7 +267,7 @@ class ProcessingWindow(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setMinimumSize(750,380)
 
-        self.ok_btn=FirstButton("ok","ok_btn",lambda:self.addColumnIndex(imputer_columns,scale_columns,ohe_columns))
+        self.ok_btn=FirstButton("ok","ok_btn",lambda:self.addColumnIndex(imputer_columns,scale_columns,ohe_columns,model_type))
         self.close_btn=FirstButton("Close","close_btn",self.close)
         self.btnlayout=QHBoxLayout()
         self.btnlayout.addWidget(self.ok_btn)
@@ -289,21 +275,26 @@ class ProcessingWindow(QMainWindow):
 
         
         self.final_layout=QVBoxLayout()
-        self.pipeline_layout=QHBoxLayout()
+        # self.pipeline_layout=QHBoxLayout()
+        self.pipeline_layout=QGridLayout()
+        
 
         widget=QWidget()
         # scaling
         scale_layout=QVBoxLayout()
-        scale_layout.addWidget(QLabel("Scaling"))
+        # scale_layout.addWidget(QLabel("Scaling"))
 
         for item in dataFrame.columns:
             chb=QCheckBox(item)
             self.scale_boxes.append(chb)
             scale_layout.addWidget(chb)
 
+
+        
+
         # ohe hot encoding
         ohe_layout=QVBoxLayout()
-        ohe_layout.addWidget(QLabel("OH Encoding"))
+        # ohe_layout.addWidget(QLabel("OH Encoding"))
 
         for item in dataFrame.columns:
             chb=QCheckBox(item)
@@ -312,7 +303,7 @@ class ProcessingWindow(QMainWindow):
 
         # imputators
         impute_layout=QVBoxLayout()
-        impute_layout.addWidget(QLabel("Imputators"))
+        # impute_layout.addWidget(QLabel("Imputators"))
 
         combotext=["NA","mean","median","most_frequent"]
         for item in dataFrame.columns:
@@ -324,13 +315,31 @@ class ProcessingWindow(QMainWindow):
             self.imputer_boxes.append(combo)
 
             impute_layout.addWidget(combo)
+
+
+        model_layout=QVBoxLayout()
+        # model_layout.addWidget(QLabel("Model"))
+        self.model_combo=QComboBox()
+        self.model_combo.addItems(list(all_models.keys()))
+
+        model_layout.addWidget(self.model_combo)
         
         
 
 
-        self.pipeline_layout.addLayout(scale_layout)
-        self.pipeline_layout.addLayout(ohe_layout)
-        self.pipeline_layout.addLayout(impute_layout)
+        # self.pipeline_layout.addLayout(scale_layout)
+        # self.pipeline_layout.addLayout(ohe_layout)
+        # self.pipeline_layout.addLayout(impute_layout)
+        # self.pipeline_layout.addLayout(model_layout)
+
+        self.pipeline_layout.addWidget(QLabel("Scaling"),0,0)
+        self.pipeline_layout.addLayout(scale_layout,1,0)
+        self.pipeline_layout.addWidget(QLabel("OH Encoding"),0,1)
+        self.pipeline_layout.addLayout(ohe_layout,1,1)
+        self.pipeline_layout.addWidget(QLabel("Imputators"),0,2)
+        self.pipeline_layout.addLayout(impute_layout,1,2)
+        self.pipeline_layout.addWidget(QLabel("Model"),0,3)
+        self.pipeline_layout.addLayout(model_layout,1,3)
         
         
         self.final_layout.addLayout(self.pipeline_layout)
@@ -342,7 +351,11 @@ class ProcessingWindow(QMainWindow):
 
         self.setCentralWidget(widget)
     
-    def addColumnIndex(self,imputer_columns,scale_columns,ohe_columns):
+    def addColumnIndex(self,imputer_columns:list,scale_columns:list,ohe_columns:list,model_type:list):
+        imputer_columns.clear()
+        scale_columns.clear()
+        ohe_columns.clear()
+        model_type.clear()
         for box in self.scale_boxes:
             if box.isChecked():
                 scale_columns.append(self.df.columns.get_loc(box.text()))
@@ -365,15 +378,121 @@ class ProcessingWindow(QMainWindow):
             # print(imputer)
 
 
+        model_type.append(self.model_combo.currentText())
+        print(model_type)
+
+
+        
+
+
 
     def print_text(self):
         for box in self.scale_boxes:
             if box.isChecked():
                 print(self.df.columns.get_loc(box.text()),box.text())
 
-    
+
+
+class CustomUserInputWindow(QMainWindow):
+
+    def __init__(self,columns,types,model,result_window):
+        super().__init__()
+        self.setWindowFlags(Qt.FramelessWindowHint)
+
+        widget=QWidget()
+
+        self.model=model
+        self.columns=columns
+
+        self.result_window=result_window
+        self.report_txt=result_window.toPlainText()
+
+        self.types=types
+        # print(self.types)
+        for i in range(len(self.types)):
+            if str(self.types[i]).startswith("int"):
+                self.types[i]=int
+
+            elif str(self.types[i]).startswith("float"):
+                self.types[i]=float
+            else:
+                self.types[i]=str
+
+
+        layout=QVBoxLayout()
+
+        field_layout=QFormLayout()
+
+        self.value_fields=[]
+
+        for col in columns:
+            field=QLabel(str(col))
+            value=QLineEdit()
+            self.value_fields.append(value)
+
+            field_layout.addRow(field,value)
+
+        btn_layout=QHBoxLayout()
+        
+        self.confirm_btn=FirstButton("OK","confirm_btn", lambda: self.print_results(result_window))
+        self.close_btn=FirstButton("Close","close_btn",self.close)
+
+        btn_layout.addWidget(self.confirm_btn)
+        btn_layout.addWidget(self.close_btn)
+        
+
+        layout.addLayout(field_layout)
+        layout.addLayout(btn_layout)
+        
+
+        widget.setLayout(layout)
 
         
+
+
+        self.setCentralWidget(widget)
+
+        apply_stylesheet(self,"styles/custominput.qss")
+
+    
+    def print_results(self,result_window):
+
+        # test_input=[[3,"male",22,1,0,7.25,"S"],
+        #                 [1,"female",38,1,0,71.2833,"C"]]
+            
+       
+
+        values=[]
+        for value,type in zip(self.value_fields,self.types):
+            try:
+                value=type(value.text())
+            except:
+                pass
+            
+            values.append(value)
+
+        test_df=pd.DataFrame([values],columns=self.columns)
+        # print(test_df.dtypes)
+
+        transformed_test = self.model.named_steps['preprocessor'].transform(test_df)
+
+        # print(transformed_test)
+
+        predicted= self.model.named_steps['regressor'].predict(transformed_test)
+        # result_window.setText("Result: "+str(predicted[0][0]))
+        result_window.setText("Result: "+str(predicted))
+
+
+
+    def closeEvent(self,event):
+
+        # print(self.result_window.toPlainText())
+        self.result_window.setText(self.report_txt)
+
+        event.accept()
+
+
+
 
 
        
@@ -385,6 +504,9 @@ class MainWindow(QMainWindow):
         self.scaling_columns=[]
         self.ohe_columns=[]
         self.imputer_columns=[]
+        self.model_type=['Linear Regression']
+
+        self.model=None
 
         self.msg_box=None
         self.df=globalData.give_data()
@@ -405,9 +527,15 @@ class MainWindow(QMainWindow):
         frame=QFrame()
         self.split_btn=FirstButton("Select Train Test","select_train_test_btn",self.open_data_split_window)
         self.process_btn=FirstButton("Process","select_train_test_btn",self.open_data_processing_window)
-        self.train_btn=FirstButton("Train","train_btn",self.train_model_function)
-        # self.train_btn.setDisabled(True)
+        self.train_btn=FirstButton("Train","train_predict_btn",self.train_model_function)
+        self.predict_btn=FirstButton("Predict","train_predict_btn",self.predict_custom_data)
+
+        self.train_btn.setDisabled(True)
+        self.predict_btn.setDisabled(True)
         self.train_report=QTextEdit()
+
+        
+
         self.train_report.setReadOnly(True)
         if self.df is None:
             self.train_report.setText("No data available")
@@ -422,6 +550,7 @@ class MainWindow(QMainWindow):
         btn_layout.addWidget(self.split_btn)
         btn_layout.addWidget(self.process_btn)
         btn_layout.addWidget(self.train_btn)
+        btn_layout.addWidget(self.predict_btn)
         frame_layout.addLayout(btn_layout)
         # frame_layout.setAlignment(self.train_btn, Qt.AlignHCenter)
         frame.setLayout(frame_layout)
@@ -466,6 +595,7 @@ class MainWindow(QMainWindow):
         # self.open_data_split_window()
         self.split_btn.setDisabled(False)
         self.process_btn.setDisabled(False)
+        self.train_btn.setDisabled(False)
         self.train_report.setText("Select train and target variables")
 
     def open_data_processing_window(self):
@@ -474,9 +604,11 @@ class MainWindow(QMainWindow):
         self.ohe_columns=[]
         self.imputer_columns=[]
         
-        self.data_split=ProcessingWindow(self.df[list(self.x_col)],self.imputer_columns,self.scaling_columns,self.ohe_columns)
+        self.data_split=ProcessingWindow(self.df[list(self.x_col)],self.imputer_columns,self.scaling_columns,self.ohe_columns,self.model_type)
         store.add(self.data_split)
         self.data_split.show()
+
+        
 
 
     def open_data_split_window(self):
@@ -497,8 +629,11 @@ class MainWindow(QMainWindow):
         # print(X)
         # print(y)
         x_train,x_test,y_train,y_test=train_test_split(X,y,test_size=0.3)
+
+        self.train_columns=x_train.columns
+        self.train_columns_types=X.dtypes
         
-        self.worker=Worker(x_train,y_train,x_test,y_test,self.imputer_columns,self.scaling_columns,self.ohe_columns)
+        self.worker=Worker(x_train,y_train,x_test,y_test,self.imputer_columns,self.scaling_columns,self.ohe_columns,self.model_type)
         self.worker.matrix.connect(self.print_report)
         self.worker.start()
 
@@ -511,11 +646,30 @@ class MainWindow(QMainWindow):
             self.trainig_error.show()
             return
         report=""
+        self.predict_btn.setDisabled(False)
+
+        self.model=matrix["model"]
         for key,val in matrix.items():
-            report+=str(key)+" : "+str(val)+"\n"
+            if key!="model":
+                report+=str(key)+" : "+str(val)+"\n"
             # print(key,val)
         # print(matrix)
         self.train_report.setText(report)
+
+        # self.predict_custom_data()
+
+    
+    def predict_custom_data(self):
+
+        # print(self.train_columns_types)
+        
+        self.user_input_window=CustomUserInputWindow(self.train_columns,self.train_columns_types,self.model,self.train_report)
+        store.add(self.user_input_window)
+
+        self.user_input_window.show()
+
+
+
 
 
 
@@ -529,56 +683,3 @@ if __name__=="__main__":
     window=MainWindow()
     window.show()
     sys.exit(app.exec_())
-
-
-"""
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score
-from sklearn.preprocessing import StandardScaler,OneHotEncoder
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
-from sklearn.tree import DecisionTreeClassifier
-import pandas as pd
-
-df=pd.read_csv("sample_data/sample.csv")
-
-
-X_train,X_test,y_train,y_test=train_test_split(df.drop(columns=['Survived','Age']),df['Survived'],test_size=0.2,random_state=42)
-trf1=ColumnTransformer([
-    ('impute_age',SimpleImputer(),[2]),
-    ('imputer_embarker',SimpleImputer(strategy='most_frequent'),[6])
-],remainder='passthrough')
-
-# one hot encoding
-trf2=ColumnTransformer([
-    ('ohe_gender',OneHotEncoder(sparse_output=False,handle_unknown='ignore'),[1,6])
-],remainder='passthrough')
-
-trf3=ColumnTransformer([
-    ('scale',StandardScaler(),slice(0,10))
-])
-trf4=DecisionTreeClassifier()
-
-preprocessor = ColumnTransformer([
-    ('categorical', Pipeline([
-        ('imputer', SimpleImputer(strategy='most_frequent')),
-        ('encoder', OneHotEncoder(sparse_output=False, handle_unknown='ignore'))
-    ]), ['Sex']),
-    ('categorical1', Pipeline([
-        ('imputer', SimpleImputer(strategy='most_frequent')),
-        ('encoder', OneHotEncoder(sparse_output=False, handle_unknown='ignore'))
-    ]), ['Embarked'])
-], remainder='passthrough')
-
-# Final pipeline
-pipe = Pipeline([
-    ('preprocessor', preprocessor),
-    ('classifier', DecisionTreeClassifier())
-])
-pipe.fit(X_train,y_train)
-
-
-
-"""

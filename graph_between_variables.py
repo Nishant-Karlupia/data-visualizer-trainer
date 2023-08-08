@@ -7,7 +7,7 @@ from PyQt5.QtChart import QChart,QValueAxis,QLineSeries,QScatterSeries,QPieSerie
 from PyQt5.QtChart import QChart, QBarSeries, QBarSet, QBarCategoryAxis
 from CustomFunction import Open_Datafile,apply_stylesheet
 from CustomWidgets import ChartView,FirstButton,CustomMessageBox
-from PyQt5.QtGui import QPainter,QFont
+from PyQt5.QtGui import QPainter,QFont,QPalette,QColor
 from globalParams.stateStore import store
 from globalParams.dataStore import globalData
 
@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
         self.chart_type_combo=QComboBox()
         if self.dataFrame is None:
             self.chart_type_combo.setDisabled(True)
-        self.chart_type_combo.addItems(['Line Chart','Pie Chart','Bar Chart'])
+        self.chart_type_combo.addItems(['Scatter Plot','Pie Chart','Bar Chart'])
         self.chart_type_combo.currentTextChanged.connect(self.change_chart_type_widget)
 
         self.line_combo_first=QComboBox()
@@ -303,7 +303,7 @@ class MainWindow(QMainWindow):
         piechart_layout=QVBoxLayout()
         # piechart_layout.addWidget(self.chart_type_combo)
         piechart_layout.addWidget(self.pie_combo)
-        self.piechart_widget.setLayout(piechart_layout)
+        # self.piechart_widget.setLayout(piechart_layout)
 
 
         self.barchart_widget=QWidget()
@@ -323,7 +323,7 @@ class MainWindow(QMainWindow):
         self.chart_type_stack_widget.setMaximumHeight(250)
 
     def change_chart_type_widget(self,chart):
-        if chart=="Line Chart":
+        if chart=="Scatter Plot":
             self.chart_type_stack_widget.setCurrentWidget(self.line_chart_widget)
             self.make_plot()
         
@@ -346,6 +346,23 @@ class MainWindow(QMainWindow):
 
         for key,value in self.dataFrame.nunique().to_dict().items():
             pie_series.append(str(key),int(value))
+
+
+
+
+
+        predefined_colors = [
+            Qt.blue,
+            Qt.green,
+            Qt.red,
+            Qt.yellow,
+            Qt.cyan,
+            # Add more predefined colors as needed
+        ]
+
+        # Assign predefined colors to the slices
+        for i, slice in enumerate(pie_series.slices()):
+            slice.setColor(predefined_colors[i % len(predefined_colors)])
 
         self.pie_chart.addSeries(pie_series)
 
